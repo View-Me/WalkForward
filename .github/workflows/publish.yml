@@ -42,7 +42,7 @@ jobs:
       - name: Validate package
         run: |
           dotnet tool install --global Meziantou.Framework.NuGetPackageValidation.Tool
-          meziantou.validate-nuget-package ./artifacts/*.nupkg --excluded-rules 119
+          meziantou.validate-nuget-package ./artifacts/*.nupkg --excluded-rule-ids 119
 
       - name: NuGet login (OIDC)
         uses: NuGet/login@v1
