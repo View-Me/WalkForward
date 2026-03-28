@@ -1,0 +1,47 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Use the latest C# language version -->
+    <LangVersion>latest</LangVersion>
+
+    <!-- Enable implicit usings for System, System.Collections.Generic, etc. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Enable all .NET SDK built-in analyzers at the most comprehensive level -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <AnalysisMode>All</AnalysisMode>
+
+    <!-- Enforce code style rules during build (not just in IDE) -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- Treat all warnings as errors to fail the build on any issue -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Enable nullable reference type analysis -->
+    <Nullable>enable</Nullable>
+
+    <!-- Generate XML documentation file -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- StyleCop: Code style, layout, ordering, spacing, documentation rules -->
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
+
+    <!-- SonarAnalyzer: Bugs, code smells, security vulnerabilities, maintainability -->
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.20.0.135146" PrivateAssets="all" />
+
+    <!-- Meziantou: .NET best practices, performance, security, usage rules -->
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.18" PrivateAssets="all" />
+
+    <!-- Roslynator: Comprehensive code analysis, refactoring, formatting -->
+    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- StyleCop configuration file -->
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+
+</Project>

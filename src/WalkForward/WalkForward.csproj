@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <RootNamespace>WalkForward</RootNamespace>
+    <AssemblyName>WalkForward</AssemblyName>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <IsPackable>true</IsPackable>
+    <PackageId>WalkForward.Net</PackageId>
+    <Description>Time-series cross-validation without lookahead bias. Walk-forward fold generation (anchored and rolling) with configurable embargo, warmup, and consistency metrics.</Description>
+    <PackageTags>walkforward;cross-validation;time-series;backtesting;machine-learning;quantitative-finance</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="all" />
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="2.0.2" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WalkForward.Tests.Unit" />
+    <InternalsVisibleTo Include="WalkForward.Tests.Architecture" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+</Project>
