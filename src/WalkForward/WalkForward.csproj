@@ -17,8 +17,6 @@
     <Authors>Dima Medvedev</Authors>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/View-Me/WalkForward</PackageProjectUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
