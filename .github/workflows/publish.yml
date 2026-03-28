@@ -37,7 +37,7 @@ jobs:
         run: dotnet test --no-build -c Release
 
       - name: Pack
-        run: dotnet pack src/WalkForward/WalkForward.csproj --no-build -c Release -o ./artifacts
+        run: dotnet pack src/WalkForward/WalkForward.csproj -c Release -o ./artifacts
 
       - name: Validate package
         run: |
