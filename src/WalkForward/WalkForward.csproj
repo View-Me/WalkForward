@@ -12,11 +12,11 @@
     <PackageTags>walkforward;cross-validation;time-series;backtesting;machine-learning;quantitative-finance</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/dimamedvedev/WalkForward.Net</RepositoryUrl>
+    <RepositoryUrl>https://github.com/View-Me/WalkForward</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Authors>Dima Medvedev</Authors>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageProjectUrl>https://github.com/dimamedvedev/WalkForward.Net</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/View-Me/WalkForward</PackageProjectUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
