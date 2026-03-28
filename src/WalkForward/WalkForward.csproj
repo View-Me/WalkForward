@@ -14,6 +14,11 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/dimamedvedev/WalkForward.Net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <Authors>Dima Medvedev</Authors>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/dimamedvedev/WalkForward.Net</PackageProjectUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +34,7 @@
 
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="" />
+    <None Include="../../icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>

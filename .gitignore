@@ -30,6 +30,8 @@ artifacts/
 *~
 CodeCoverage/
 CoverageResults/
+coverage.json
+coverage.cobertura.xml
 
 # IDE configuration folders
 .idea/
