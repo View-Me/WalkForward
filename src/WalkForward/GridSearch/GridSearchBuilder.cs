@@ -29,6 +29,7 @@ public sealed class GridSearchBuilder
     private FoldMode? _mode;
     private Func<Fold, double>? _fitnessCallback;
     private CompositeScorer? _scorer;
+    private Func<Fold, IEnumerable<string>>? _labeler;
     private int _warmupPoints;
     private TimeSpan _embargo;
     private int _minimumFolds = 2;
@@ -164,6 +165,22 @@ public sealed class GridSearchBuilder
     }
 
     /// <summary>
+    /// Sets a labeler callback that assigns arbitrary string labels to each fold.
+    /// When set, the grid search groups results by label and provides per-segment
+    /// best window selection via <see cref="GridSearchResult.SegmentResults"/>
+    /// and <see cref="GridSearchResult.BestPerSegment"/>.
+    /// Folds for which the labeler returns an empty enumerable are excluded from all segments
+    /// but still contribute to the overall <see cref="GridSearchResult.Cells"/>.
+    /// </summary>
+    /// <param name="labeler">A function that receives a fold and returns zero or more labels.</param>
+    /// <returns>This builder for chaining.</returns>
+    public GridSearchBuilder WithLabeler(Func<Fold, IEnumerable<string>> labeler)
+    {
+        _labeler = labeler;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the minimum number of data points required before the first training window.
     /// Folds whose training window would start before this threshold are skipped.
     /// </summary>
@@ -266,6 +283,7 @@ public sealed class GridSearchBuilder
             _minimumFolds,
             _maxFoldsPerCell,
             _scorer,
+            _labeler,
             cancellationToken);
     }
 }

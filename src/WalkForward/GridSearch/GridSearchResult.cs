@@ -13,6 +13,22 @@ public sealed record GridSearchResult
     public required IReadOnlyList<GridCellResult> Cells { get; init; }
 
     /// <summary>
+    /// Gets per-segment ranked cell results. Keys are segment labels assigned by the labeler callback.
+    /// Empty dictionary when no labeler is configured via
+    /// <see cref="GridSearchBuilder.WithLabeler(System.Func{Fold, System.Collections.Generic.IEnumerable{string}})"/>.
+    /// </summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<GridCellResult>> SegmentResults { get; init; }
+        = new Dictionary<string, IReadOnlyList<GridCellResult>>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets the best-scoring cell per segment label. The best cell is the first entry in
+    /// the corresponding <see cref="SegmentResults"/> list.
+    /// Empty dictionary when no labeler is configured.
+    /// </summary>
+    public IReadOnlyDictionary<string, GridCellResult> BestPerSegment { get; init; }
+        = new Dictionary<string, GridCellResult>(StringComparer.Ordinal);
+
+    /// <summary>
     /// Returns the top <paramref name="count"/> cells from the ranked results.
     /// If <paramref name="count"/> exceeds the number of available cells, all cells are returned.
     /// </summary>
