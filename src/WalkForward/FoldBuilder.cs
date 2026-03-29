@@ -1,5 +1,6 @@
 using WalkForward.Degradation;
 using WalkForward.GridSearch;
+using WalkForward.Pipeline;
 
 namespace WalkForward;
 
@@ -73,4 +74,10 @@ public sealed class FoldBuilder
     /// </summary>
     /// <returns>A <see cref="DegradationBuilder"/> for configuring the degradation analysis.</returns>
     public DegradationBuilder Degrade() => new(_totalDataPoints, _dataFrequency);
+
+    /// <summary>
+    /// Creates a pipeline builder for composing multi-stage window discovery workflows.
+    /// </summary>
+    /// <returns>A <see cref="PipelineBuilder"/> for configuring the pipeline.</returns>
+    public PipelineBuilder Pipeline() => new(_totalDataPoints, _dataFrequency);
 }
