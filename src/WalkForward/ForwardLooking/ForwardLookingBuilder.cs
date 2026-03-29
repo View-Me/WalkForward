@@ -3,16 +3,16 @@ using WalkForward.Internal;
 namespace WalkForward;
 
 /// <summary>
-/// Builder for rolling walk-forward fold generation.
-/// Rolling mode walks forwards from the start of data, producing folds
+/// Builder for forward-looking walk-forward fold generation.
+/// ForwardLooking mode walks forwards from the start of data, producing folds
 /// with fixed-size training windows that slide through the dataset.
 /// </summary>
 /// <remarks>
-/// Use <see cref="WalkForwardBuilder.Rolling"/> to obtain an instance of this builder.
-/// Rolling mode supports stride configuration via <see cref="WithStride"/>.
+/// Use <see cref="FoldBuilder.ForwardLooking"/> to obtain an instance of this builder.
+/// ForwardLooking mode supports stride configuration via <see cref="WithStride"/>.
 /// When stride is not set, it defaults to the test window size.
 /// </remarks>
-public sealed class RollingBuilder
+public sealed class ForwardLookingBuilder
 {
     private readonly int _totalDataPoints;
     private readonly TimeSpan _dataFrequency;
@@ -24,11 +24,11 @@ public sealed class RollingBuilder
     private int? _maxFolds;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RollingBuilder"/> class.
+    /// Initializes a new instance of the <see cref="ForwardLookingBuilder"/> class.
     /// </summary>
     /// <param name="totalDataPoints">Total number of data points in the dataset.</param>
     /// <param name="dataFrequency">Time interval between consecutive data points.</param>
-    internal RollingBuilder(int totalDataPoints, TimeSpan dataFrequency)
+    internal ForwardLookingBuilder(int totalDataPoints, TimeSpan dataFrequency)
     {
         _totalDataPoints = totalDataPoints;
         _dataFrequency = dataFrequency;
@@ -39,7 +39,7 @@ public sealed class RollingBuilder
     /// </summary>
     /// <param name="window">Training window duration (e.g., 30 days).</param>
     /// <returns>This builder for chaining.</returns>
-    public RollingBuilder WithTrainingWindow(TimeSpan window)
+    public ForwardLookingBuilder WithTrainingWindow(TimeSpan window)
     {
         _trainingWindow = window;
         return this;
@@ -50,7 +50,7 @@ public sealed class RollingBuilder
     /// </summary>
     /// <param name="window">Test window duration (e.g., 7 days).</param>
     /// <returns>This builder for chaining.</returns>
-    public RollingBuilder WithTestWindow(TimeSpan window)
+    public ForwardLookingBuilder WithTestWindow(TimeSpan window)
     {
         _testWindow = window;
         return this;
@@ -62,7 +62,7 @@ public sealed class RollingBuilder
     /// </summary>
     /// <param name="embargo">Embargo duration (e.g., 4 hours). Defaults to zero.</param>
     /// <returns>This builder for chaining.</returns>
-    public RollingBuilder WithEmbargo(TimeSpan embargo)
+    public ForwardLookingBuilder WithEmbargo(TimeSpan embargo)
     {
         _embargo = embargo;
         return this;
@@ -74,7 +74,7 @@ public sealed class RollingBuilder
     /// </summary>
     /// <param name="warmupPoints">Number of warmup data points. Defaults to 0.</param>
     /// <returns>This builder for chaining.</returns>
-    public RollingBuilder WithWarmup(int warmupPoints)
+    public ForwardLookingBuilder WithWarmup(int warmupPoints)
     {
         _warmupPoints = warmupPoints;
         return this;
@@ -86,7 +86,7 @@ public sealed class RollingBuilder
     /// </summary>
     /// <param name="stride">Stride duration between fold starts (e.g., 3 days).</param>
     /// <returns>This builder for chaining.</returns>
-    public RollingBuilder WithStride(TimeSpan stride)
+    public ForwardLookingBuilder WithStride(TimeSpan stride)
     {
         _stride = stride;
         return this;
@@ -98,14 +98,14 @@ public sealed class RollingBuilder
     /// </summary>
     /// <param name="maxFolds">Maximum number of folds to generate.</param>
     /// <returns>This builder for chaining.</returns>
-    public RollingBuilder WithMaxFolds(int maxFolds)
+    public ForwardLookingBuilder WithMaxFolds(int maxFolds)
     {
         _maxFolds = maxFolds;
         return this;
     }
 
     /// <summary>
-    /// Builds the fold boundaries using rolling walk-forward logic.
+    /// Builds the fold boundaries using forward-looking walk-forward logic.
     /// Validates all parameters and delegates to the internal fold generator.
     /// </summary>
     /// <returns>An ordered list of folds, with fold 0 being the earliest.</returns>
@@ -115,7 +115,7 @@ public sealed class RollingBuilder
     /// </exception>
     public IReadOnlyList<Fold> Build()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = _totalDataPoints,
             DataFrequency = _dataFrequency,
@@ -127,6 +127,6 @@ public sealed class RollingBuilder
             MaxFolds = _maxFolds,
         };
 
-        return RollingFoldGenerator.Generate(options);
+        return ForwardLookingFoldGenerator.Generate(options);
     }
 }

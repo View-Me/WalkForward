@@ -8,12 +8,12 @@ public class ManyFoldsTests
 {
     [Test]
     [CancelAfter(5000)]
-    public void AnchoredMode_Generates100PlusFolds()
+    public void BackwardLookingMode_Generates100PlusFolds()
     {
-        var folds = new WalkForwardBuilder()
+        var folds = new FoldBuilder()
             .WithDataPoints(500_000)
             .WithDataFrequency(TimeSpan.FromMinutes(1))
-            .Anchored()
+            .BackwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(1))
             .WithTestWindow(TimeSpan.FromHours(4))
             .Build();
@@ -25,12 +25,12 @@ public class ManyFoldsTests
 
     [Test]
     [CancelAfter(5000)]
-    public void RollingMode_Generates100PlusFolds()
+    public void ForwardLookingMode_Generates100PlusFolds()
     {
-        var folds = new WalkForwardBuilder()
+        var folds = new FoldBuilder()
             .WithDataPoints(500_000)
             .WithDataFrequency(TimeSpan.FromMinutes(1))
-            .Rolling()
+            .ForwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(1))
             .WithTestWindow(TimeSpan.FromHours(4))
             .Build();

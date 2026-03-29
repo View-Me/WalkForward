@@ -5,15 +5,15 @@ using NUnit.Framework;
 namespace WalkForward.Tests.Unit.Builder;
 
 [TestFixture]
-public class RollingBuilderTests
+public class ForwardLookingBuilderTests
 {
     [Test]
     public void Full_rolling_chain_returns_folds()
     {
-        var folds = new WalkForwardBuilder()
+        var folds = new FoldBuilder()
             .WithDataPoints(10000)
             .WithDataFrequency(TimeSpan.FromMinutes(15))
-            .Rolling()
+            .ForwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(30))
             .WithTestWindow(TimeSpan.FromDays(7))
             .WithStride(TimeSpan.FromDays(3))
@@ -28,22 +28,22 @@ public class RollingBuilderTests
     }
 
     [Test]
-    public void RollingBuilder_does_expose_WithStride()
+    public void ForwardLookingBuilder_does_expose_WithStride()
     {
-        var methods = typeof(RollingBuilder).GetMethods(BindingFlags.Public | BindingFlags.Instance);
+        var methods = typeof(ForwardLookingBuilder).GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
         methods.Should().Contain(
             m => m.Name == "WithStride",
-            "rolling mode should expose stride configuration");
+            "forward-looking mode should expose stride configuration");
     }
 
     [Test]
-    public void Rolling_without_WithStride_defaults_stride_to_test_window_size()
+    public void ForwardLooking_without_WithStride_defaults_stride_to_test_window_size()
     {
-        var folds = new WalkForwardBuilder()
+        var folds = new FoldBuilder()
             .WithDataPoints(10000)
             .WithDataFrequency(TimeSpan.FromMinutes(15))
-            .Rolling()
+            .ForwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(30))
             .WithTestWindow(TimeSpan.FromDays(7))
             .Build();
@@ -62,10 +62,10 @@ public class RollingBuilderTests
     [Test]
     public void WithEmbargo_creates_gap_between_train_and_test()
     {
-        var folds = new WalkForwardBuilder()
+        var folds = new FoldBuilder()
             .WithDataPoints(10000)
             .WithDataFrequency(TimeSpan.FromMinutes(15))
-            .Rolling()
+            .ForwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(30))
             .WithTestWindow(TimeSpan.FromDays(7))
             .WithEmbargo(TimeSpan.FromHours(4))

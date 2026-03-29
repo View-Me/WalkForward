@@ -24,9 +24,8 @@ public static class Consistency
         var negativeSquaredSum = 0.0;
         var negativeCount = 0;
 
-        for (var i = 0; i < foldReturns.Length; i++)
+        foreach (var r in foldReturns)
         {
-            var r = foldReturns[i];
             sum += r;
 
             if (r > 0)
@@ -46,7 +45,7 @@ public static class Consistency
             }
         }
 
-        var consistencyPercent = ((double)positiveCount / foldReturns.Length) * 100.0;
+        var consistencyPercent = (double)positiveCount / foldReturns.Length * 100.0;
         var averageReturn = sum / foldReturns.Length;
 
         var downsideDeviation = negativeCount > 0

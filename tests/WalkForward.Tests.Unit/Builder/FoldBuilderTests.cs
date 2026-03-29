@@ -4,38 +4,38 @@ using NUnit.Framework;
 namespace WalkForward.Tests.Unit.Builder;
 
 [TestFixture]
-public class WalkForwardBuilderTests
+public class FoldBuilderTests
 {
     [Test]
-    public void Anchored_returns_AnchoredBuilder_instance()
+    public void BackwardLooking_returns_BackwardLookingBuilder_instance()
     {
-        var builder = new WalkForwardBuilder()
+        var builder = new FoldBuilder()
             .WithDataPoints(10000)
             .WithDataFrequency(TimeSpan.FromMinutes(15));
 
-        var anchored = builder.Anchored();
+        var backwardLooking = builder.BackwardLooking();
 
-        anchored.Should().BeOfType<AnchoredBuilder>();
+        backwardLooking.Should().BeOfType<BackwardLookingBuilder>();
     }
 
     [Test]
-    public void Rolling_returns_RollingBuilder_instance()
+    public void ForwardLooking_returns_ForwardLookingBuilder_instance()
     {
-        var builder = new WalkForwardBuilder()
+        var builder = new FoldBuilder()
             .WithDataPoints(10000)
             .WithDataFrequency(TimeSpan.FromMinutes(15));
 
-        var rolling = builder.Rolling();
+        var forwardLooking = builder.ForwardLooking();
 
-        rolling.Should().BeOfType<RollingBuilder>();
+        forwardLooking.Should().BeOfType<ForwardLookingBuilder>();
     }
 
     [Test]
     public void Build_without_DataPoints_throws_ArgumentOutOfRangeException()
     {
-        var builder = new WalkForwardBuilder()
+        var builder = new FoldBuilder()
             .WithDataFrequency(TimeSpan.FromMinutes(15))
-            .Anchored()
+            .BackwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(90))
             .WithTestWindow(TimeSpan.FromDays(7));
 
@@ -47,9 +47,9 @@ public class WalkForwardBuilderTests
     [Test]
     public void Build_without_DataFrequency_throws_ArgumentOutOfRangeException()
     {
-        var builder = new WalkForwardBuilder()
+        var builder = new FoldBuilder()
             .WithDataPoints(10000)
-            .Anchored()
+            .BackwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(90))
             .WithTestWindow(TimeSpan.FromDays(7));
 

@@ -10,9 +10,9 @@ public class AutoFoldCountTests
     private static readonly TimeSpan FifteenMinutes = TimeSpan.FromMinutes(15);
 
     [Test]
-    public void Anchored_MaxFoldsNull_AutoComputesFoldCount()
+    public void BackwardLooking_MaxFoldsNull_AutoComputesFoldCount()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -20,15 +20,15 @@ public class AutoFoldCountTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         folds.Should().HaveCount(2);
     }
 
     [Test]
-    public void Rolling_MaxFoldsNull_AutoComputesFoldCount()
+    public void ForwardLooking_MaxFoldsNull_AutoComputesFoldCount()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -36,7 +36,7 @@ public class AutoFoldCountTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         // Verify the folds don't exceed data and auto-compute is correct
         folds.Should().HaveCountGreaterThan(0);
@@ -44,9 +44,9 @@ public class AutoFoldCountTests
     }
 
     [Test]
-    public void Anchored_MaxFolds3_ReturnsAtMost3Folds()
+    public void BackwardLooking_MaxFolds3_ReturnsAtMost3Folds()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -55,15 +55,15 @@ public class AutoFoldCountTests
             MaxFolds = 3,
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         folds.Should().HaveCountLessThanOrEqualTo(3);
     }
 
     [Test]
-    public void Rolling_MaxFolds3_ReturnsAtMost3Folds()
+    public void ForwardLooking_MaxFolds3_ReturnsAtMost3Folds()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -72,7 +72,7 @@ public class AutoFoldCountTests
             MaxFolds = 3,
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         folds.Should().HaveCountLessThanOrEqualTo(3);
     }

@@ -40,6 +40,7 @@ jobs:
           --no-build -c Release
           /p:CollectCoverage=true
           /p:CoverletOutputFormat=cobertura
+          /p:CoverletOutput=./TestResults/coverage.cobertura.xml
           /p:Threshold=90
           /p:ThresholdType=line
           /p:ThresholdStat=total
@@ -61,10 +62,12 @@ jobs:
           --logger "trx;LogFileName=perf-results.trx"
           --results-directory ./TestResults
 
-      - name: Upload test results
+      - name: Upload test results and coverage
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-${{ matrix.os }}
-          path: ./TestResults/*.trx
+          path: |
+            ./TestResults/*.trx
+            ./TestResults/coverage.cobertura.xml
           retention-days: 14

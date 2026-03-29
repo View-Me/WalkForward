@@ -14,7 +14,7 @@ public class RangeSlicingTests
     {
         var data = Enumerable.Range(0, 1000).ToArray();
 
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 1000,
             DataFrequency = TimeSpan.FromHours(1),
@@ -22,7 +22,7 @@ public class RangeSlicingTests
             TestWindow = TimeSpan.FromDays(3),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
         folds.Should().HaveCountGreaterThan(0);
 
         var firstFold = folds[0];
@@ -38,7 +38,7 @@ public class RangeSlicingTests
     {
         var data = Enumerable.Range(0, 1000).ToArray();
 
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 1000,
             DataFrequency = TimeSpan.FromHours(1),
@@ -46,7 +46,7 @@ public class RangeSlicingTests
             TestWindow = TimeSpan.FromDays(3),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
         folds.Should().HaveCountGreaterThan(0);
 
         var firstFold = folds[0];
@@ -62,7 +62,7 @@ public class RangeSlicingTests
     {
         var data = Enumerable.Range(0, 10000).ToArray();
 
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -71,7 +71,7 @@ public class RangeSlicingTests
             Embargo = TimeSpan.FromHours(4),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
         folds.Should().HaveCountGreaterThan(0);
 
         var firstFold = folds[0];

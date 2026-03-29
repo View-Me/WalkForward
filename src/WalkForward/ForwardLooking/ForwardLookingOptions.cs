@@ -3,11 +3,11 @@ using WalkForward.Internal;
 namespace WalkForward;
 
 /// <summary>
-/// Configuration options for rolling walk-forward fold generation.
-/// Rolling mode walks forwards from the start of data, producing folds
+/// Configuration options for forward-looking walk-forward fold generation.
+/// ForwardLooking mode walks forwards from the start of data, producing folds
 /// with fixed-size training windows that slide through the dataset.
 /// </summary>
-public sealed record RollingOptions
+public sealed record ForwardLookingOptions
 {
     /// <summary>
     /// Gets the total number of data points in the dataset.

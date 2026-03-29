@@ -1,18 +1,18 @@
 namespace WalkForward.Internal;
 
 /// <summary>
-/// Generates fold boundaries for anchored walk-forward validation.
+/// Generates fold boundaries for backward-looking walk-forward validation.
 /// Walks backwards from the end of data, producing folds with the most
 /// recent test window first. Training windows have a fixed size for each fold.
 /// </summary>
-internal static class AnchoredFoldGenerator
+internal static class BackwardLookingFoldGenerator
 {
     /// <summary>
-    /// Generates fold boundaries using anchored walk-forward logic.
+    /// Generates fold boundaries using backward-looking walk-forward logic.
     /// </summary>
-    /// <param name="options">Configuration for anchored fold generation.</param>
+    /// <param name="options">Configuration for backward-looking fold generation.</param>
     /// <returns>An ordered list of folds, with fold 0 being the most recent.</returns>
-    internal static IReadOnlyList<Fold> Generate(AnchoredOptions options)
+    internal static IReadOnlyList<Fold> Generate(BackwardLookingOptions options)
     {
         options.Validate();
 
