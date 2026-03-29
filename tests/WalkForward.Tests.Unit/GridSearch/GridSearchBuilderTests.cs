@@ -1,6 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 using WalkForward.GridSearch;
+using WalkForward.Scoring;
 
 namespace WalkForward.Tests.Unit.GridSearch;
 
@@ -541,6 +542,142 @@ public class GridSearchBuilderTests
         foreach (var cell in result.Cells)
         {
             cell.FoldCount.Should().BeLessThanOrEqualTo(2);
+        }
+    }
+
+    // --- GRID-05: Scoring integration ---
+    [Test]
+    public void Build_WithScoring_PopulatesCompositeScore()
+    {
+        var result = new FoldBuilder()
+            .WithDataPoints(DataPoints)
+            .WithDataFrequency(Frequency)
+            .GridSearch()
+            .WithTrainWindows(TimeSpan.FromDays(30), TimeSpan.FromDays(60), TimeSpan.FromDays(90))
+            .WithTestWindows(TimeSpan.FromDays(7), TimeSpan.FromDays(14))
+            .BackwardLooking()
+            .WithMinimumFolds(1)
+            .Evaluate(fold => 0.5 + (fold.TrainLength / 10000.0))
+            .WithScoring(new CompositeScorer().WithWeights(0.6, 0.25, 0.15))
+            .Build();
+
+        result.Cells.Should().NotBeEmpty();
+        foreach (var cell in result.Cells)
+        {
+            cell.CompositeScore.Should().BeGreaterThan(0, "all scored cells should have a positive CompositeScore");
+        }
+    }
+
+    [Test]
+    public void Build_WithScoring_PopulatesSmoothnessBonus()
+    {
+        var result = new FoldBuilder()
+            .WithDataPoints(DataPoints)
+            .WithDataFrequency(Frequency)
+            .GridSearch()
+            .WithTrainWindows(TimeSpan.FromDays(30), TimeSpan.FromDays(60), TimeSpan.FromDays(90))
+            .WithTestWindows(TimeSpan.FromDays(7), TimeSpan.FromDays(14))
+            .BackwardLooking()
+            .WithMinimumFolds(1)
+            .Evaluate(fold => 0.5 + (fold.TrainLength / 10000.0))
+            .WithScoring(new CompositeScorer().WithWeights(0.6, 0.25, 0.15))
+            .Build();
+
+        result.Cells.Should().NotBeEmpty();
+
+        // In a multi-cell grid, at least some cells have neighbors and thus smoothness > 0
+        result.Cells.Should().Contain(
+            c => c.SmoothnessBonus > 0,
+            "at least some cells in a multi-cell grid should have SmoothnessBonus > 0");
+    }
+
+    [Test]
+    public void Build_WithScoring_RankedByCompositeScore()
+    {
+        var result = new FoldBuilder()
+            .WithDataPoints(DataPoints)
+            .WithDataFrequency(Frequency)
+            .GridSearch()
+            .WithTrainWindows(TimeSpan.FromDays(30), TimeSpan.FromDays(60), TimeSpan.FromDays(90))
+            .WithTestWindows(TimeSpan.FromDays(7), TimeSpan.FromDays(14))
+            .BackwardLooking()
+            .WithMinimumFolds(1)
+            .Evaluate(fold => 0.5 + (fold.TrainLength / 10000.0))
+            .WithScoring(new CompositeScorer().WithWeights(0.6, 0.25, 0.15))
+            .Build();
+
+        for (var i = 0; i < result.Cells.Count - 1; i++)
+        {
+            result.Cells[i].CompositeScore.Should().BeGreaterThanOrEqualTo(
+                result.Cells[i + 1].CompositeScore,
+                "cells should be ranked by CompositeScore descending");
+        }
+    }
+
+    [Test]
+    public void Build_WithScoring_Top3_ReturnsHighestScored()
+    {
+        var result = new FoldBuilder()
+            .WithDataPoints(DataPoints)
+            .WithDataFrequency(Frequency)
+            .GridSearch()
+            .WithTrainWindows(TimeSpan.FromDays(30), TimeSpan.FromDays(60), TimeSpan.FromDays(90))
+            .WithTestWindows(TimeSpan.FromDays(7), TimeSpan.FromDays(14))
+            .BackwardLooking()
+            .WithMinimumFolds(1)
+            .Evaluate(fold => 0.5 + (fold.TrainLength / 10000.0))
+            .WithScoring(new CompositeScorer().WithWeights(0.6, 0.25, 0.15))
+            .Build();
+
+        var top3 = result.Top(3);
+
+        top3.Should().HaveCount(3);
+        top3.Should().BeEquivalentTo(
+            result.Cells.Take(3),
+            options => options.WithStrictOrdering(),
+            "Top(3) should return the 3 highest-scored cells");
+    }
+
+    [Test]
+    public void Build_WithoutScoring_CompositeScoreIsZero()
+    {
+        var result = new FoldBuilder()
+            .WithDataPoints(DataPoints)
+            .WithDataFrequency(Frequency)
+            .GridSearch()
+            .WithTrainWindows(TimeSpan.FromDays(30), TimeSpan.FromDays(60), TimeSpan.FromDays(90))
+            .WithTestWindows(TimeSpan.FromDays(7), TimeSpan.FromDays(14))
+            .BackwardLooking()
+            .WithMinimumFolds(1)
+            .Evaluate(fold => 0.5 + (fold.TrainLength / 10000.0))
+            .Build();
+
+        foreach (var cell in result.Cells)
+        {
+            cell.CompositeScore.Should().Be(0.0, "unscored cells should have CompositeScore == 0");
+            cell.SmoothnessBonus.Should().Be(0.0, "unscored cells should have SmoothnessBonus == 0");
+        }
+    }
+
+    [Test]
+    public void Build_WithoutScoring_RankedByMeanFitness()
+    {
+        var result = new FoldBuilder()
+            .WithDataPoints(DataPoints)
+            .WithDataFrequency(Frequency)
+            .GridSearch()
+            .WithTrainWindows(TimeSpan.FromDays(30), TimeSpan.FromDays(60), TimeSpan.FromDays(90))
+            .WithTestWindows(TimeSpan.FromDays(7), TimeSpan.FromDays(14))
+            .BackwardLooking()
+            .WithMinimumFolds(1)
+            .Evaluate(fold => 0.5 + (fold.TrainLength / 10000.0))
+            .Build();
+
+        for (var i = 0; i < result.Cells.Count - 1; i++)
+        {
+            result.Cells[i].MeanFitness.Should().BeGreaterThanOrEqualTo(
+                result.Cells[i + 1].MeanFitness,
+                "unscored cells should be ranked by MeanFitness descending");
         }
     }
 }
