@@ -21,7 +21,7 @@ Targets **.NET 8.0** and **.NET 9.0**. Zero runtime dependencies.
 
 ## Quick Start
 
-### Anchored Mode (expanding window)
+### Backward-Looking Mode
 
 ```csharp
 using WalkForward;
@@ -30,7 +30,7 @@ using WalkForward;
 var folds = new WalkForwardBuilder()
     .WithDataPoints(10_000)
     .WithDataFrequency(TimeSpan.FromMinutes(15))
-    .Anchored()
+    .BackwardLooking()
     .WithTrainingWindow(TimeSpan.FromDays(90))
     .WithTestWindow(TimeSpan.FromDays(7))
     .WithEmbargo(TimeSpan.FromHours(4))
@@ -54,13 +54,13 @@ var metrics = Consistency.Compute(returns);
 // metrics.AverageReturn        -> 0.022
 ```
 
-### Rolling Mode (fixed window)
+### Forward-Looking Mode
 
 ```csharp
 var folds = new WalkForwardBuilder()
     .WithDataPoints(50_000)
     .WithDataFrequency(TimeSpan.FromMinutes(15))
-    .Rolling()
+    .ForwardLooking()
     .WithTrainingWindow(TimeSpan.FromDays(30))
     .WithTestWindow(TimeSpan.FromDays(7))
     .WithStride(TimeSpan.FromDays(3))
@@ -73,45 +73,63 @@ var folds = new WalkForwardBuilder()
 | Type | Description |
 |------|-------------|
 | `WalkForwardBuilder` | Entry point. Configure data points and frequency, then select a mode. |
-| `AnchoredBuilder` | Anchored mode configuration: training/test windows, embargo, warmup, max folds. |
-| `RollingBuilder` | Rolling mode configuration: adds stride to anchored options. |
+| `BackwardLookingBuilder` | Backward-looking mode configuration: training/test windows, embargo, warmup, max folds. |
+| `ForwardLookingBuilder` | Forward-looking mode configuration: adds stride to backward-looking options. |
 | `Fold` | Single fold with int boundaries and `Range` properties for array slicing. |
-| `AnchoredOptions` | Anchored configuration record (used internally by `AnchoredBuilder`). |
-| `RollingOptions` | Rolling configuration record (used internally by `RollingBuilder`). |
-| `WalkForwardMode` | Enum: `Anchored`, `Rolling`. |
+| `BackwardLookingOptions` | Backward-looking configuration record (used internally by `BackwardLookingBuilder`). |
+| `ForwardLookingOptions` | Forward-looking configuration record (used internally by `ForwardLookingBuilder`). |
+| `WalkForwardMode` | Enum: `BackwardLooking`, `ForwardLooking`. |
 | `Consistency` | Static methods: `Compute()` for returns, `ForClassifier()` for ML accuracy. |
 | `ConsistencyMetrics` | Returns-based metrics: consistency %, magnitude consistency, worst fold, average return. |
 | `ClassifierConsistencyMetrics` | Classifier metrics: average accuracy, log-loss, consistency above baseline. |
 
 ## Modes
 
-### Anchored (expanding window)
+### Backward-Looking
 
-Folds walk backwards from the end of data. The training window is fixed-size per fold.
+Starts from the most recent data and works backwards. Each fold uses the same fixed-size training window, placed just before its test window. Fold 1 tests the newest data, fold 2 tests the next-oldest chunk, and so on.
 
-```
-Data: [========================================]
-
-Fold 1:            [=====TRAIN=====][//][==TEST==]
-Fold 2:     [=====TRAIN=====][//][==TEST==]
-Fold 3: [=====TRAIN=====][//][==TEST==]
-                          ^^
-                        embargo
-```
-
-### Rolling (fixed window)
-
-Both windows slide forward through the data with a configurable stride.
+Use this when recent data matters most and you want to evaluate how a model trained on a fixed history performs across successive past periods.
 
 ```
-Data: [========================================]
+Time ──────────────────────────────────────────────────────────►
 
-Fold 1: [=====TRAIN=====][//][==TEST==]
-Fold 2:       [=====TRAIN=====][//][==TEST==]
-Fold 3:             [=====TRAIN=====][//][==TEST==]
-                               ^^
-                             embargo
+Data:   [==================================================]
+
+                                                         newest
+                                                            ▼
+Fold 1:                  [===TRAIN===]~embargo~[==TEST==]   │
+Fold 2:        [===TRAIN===]~embargo~[==TEST==]             │
+Fold 3: [===TRAIN===]~embargo~[==TEST==]                    │
+         ▲
+       oldest
 ```
+
+All training windows are the same size. Folds are built right-to-left from the end of the dataset.
+
+### Forward-Looking
+
+Starts from the oldest data and slides forward. Each fold advances by a configurable stride. Both training and test windows stay the same size throughout.
+
+Use this when you want to simulate deploying a model repeatedly over time -- train on a fixed lookback, test on the next period, advance, repeat.
+
+```
+Time ──────────────────────────────────────────────────────────►
+
+Data:   [==================================================]
+
+       oldest
+         ▼
+Fold 1:  [===TRAIN===]~embargo~[==TEST==]
+Fold 2:        [===TRAIN===]~embargo~[==TEST==]
+Fold 3:              [===TRAIN===]~embargo~[==TEST==]
+                                                      ▲
+                                                    newest
+              |------|
+               stride (how far each fold shifts forward)
+```
+
+The stride defaults to the test window size (no overlap between test windows), but you can set it smaller for overlapping tests or larger for gaps.
 
 ## Embargo
 

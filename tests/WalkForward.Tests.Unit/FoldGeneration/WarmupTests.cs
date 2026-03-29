@@ -10,9 +10,9 @@ public class WarmupTests
     private static readonly TimeSpan FifteenMinutes = TimeSpan.FromMinutes(15);
 
     [Test]
-    public void Anchored_WithWarmup500_SkipsFoldsWhereTrainStartBeforeWarmup()
+    public void BackwardLooking_WithWarmup500_SkipsFoldsWhereTrainStartBeforeWarmup()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -21,7 +21,7 @@ public class WarmupTests
             WarmupPoints = 500,
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         foreach (var fold in folds)
         {
@@ -30,9 +30,9 @@ public class WarmupTests
     }
 
     [Test]
-    public void Rolling_WithWarmup500_EnforcesMinimumTrainSize()
+    public void ForwardLooking_WithWarmup500_EnforcesMinimumTrainSize()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -41,7 +41,7 @@ public class WarmupTests
             WarmupPoints = 500,
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         folds.Should().HaveCountGreaterThan(0);
     }

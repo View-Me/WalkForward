@@ -5,15 +5,15 @@ using NUnit.Framework;
 namespace WalkForward.Tests.Unit.Builder;
 
 [TestFixture]
-public class AnchoredBuilderTests
+public class BackwardLookingBuilderTests
 {
     [Test]
     public void Full_anchored_chain_returns_non_empty_folds()
     {
-        var folds = new WalkForwardBuilder()
+        var folds = new FoldBuilder()
             .WithDataPoints(10000)
             .WithDataFrequency(TimeSpan.FromMinutes(15))
-            .Anchored()
+            .BackwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(90))
             .WithTestWindow(TimeSpan.FromDays(7))
             .WithEmbargo(TimeSpan.FromHours(4))
@@ -29,22 +29,22 @@ public class AnchoredBuilderTests
     }
 
     [Test]
-    public void AnchoredBuilder_does_not_expose_WithStride()
+    public void BackwardLookingBuilder_does_not_expose_WithStride()
     {
-        var methods = typeof(AnchoredBuilder).GetMethods(BindingFlags.Public | BindingFlags.Instance);
+        var methods = typeof(BackwardLookingBuilder).GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
         methods.Should().NotContain(
             m => m.Name == "WithStride",
-            "anchored mode should not expose stride -- it steps by test window size");
+            "backward-looking mode should not expose stride -- it steps by test window size");
     }
 
     [Test]
     public void WithMaxFolds_limits_returned_folds_to_at_most_3()
     {
-        var folds = new WalkForwardBuilder()
+        var folds = new FoldBuilder()
             .WithDataPoints(100000)
             .WithDataFrequency(TimeSpan.FromMinutes(15))
-            .Anchored()
+            .BackwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(30))
             .WithTestWindow(TimeSpan.FromDays(7))
             .WithMaxFolds(3)
@@ -56,10 +56,10 @@ public class AnchoredBuilderTests
     [Test]
     public void Without_WithMaxFolds_auto_computes_fold_count()
     {
-        var folds = new WalkForwardBuilder()
+        var folds = new FoldBuilder()
             .WithDataPoints(100000)
             .WithDataFrequency(TimeSpan.FromMinutes(15))
-            .Anchored()
+            .BackwardLooking()
             .WithTrainingWindow(TimeSpan.FromDays(30))
             .WithTestWindow(TimeSpan.FromDays(7))
             .Build();

@@ -3,11 +3,11 @@ using WalkForward.Internal;
 namespace WalkForward;
 
 /// <summary>
-/// Configuration options for anchored walk-forward fold generation.
-/// Anchored mode walks backwards from the end of data, producing folds
+/// Configuration options for backward-looking walk-forward fold generation.
+/// BackwardLooking mode walks backwards from the end of data, producing folds
 /// with the most recent data tested first.
 /// </summary>
-public sealed record AnchoredOptions
+public sealed record BackwardLookingOptions
 {
     /// <summary>
     /// Gets the total number of data points in the dataset.

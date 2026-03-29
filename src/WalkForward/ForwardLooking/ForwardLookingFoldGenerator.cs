@@ -1,18 +1,18 @@
 namespace WalkForward.Internal;
 
 /// <summary>
-/// Generates fold boundaries for rolling walk-forward validation.
+/// Generates fold boundaries for forward-looking walk-forward validation.
 /// Walks forwards from the start of data, producing folds with fixed-size
 /// training windows that slide through the dataset.
 /// </summary>
-internal static class RollingFoldGenerator
+internal static class ForwardLookingFoldGenerator
 {
     /// <summary>
-    /// Generates fold boundaries using rolling walk-forward logic.
+    /// Generates fold boundaries using forward-looking walk-forward logic.
     /// </summary>
-    /// <param name="options">Configuration for rolling fold generation.</param>
+    /// <param name="options">Configuration for forward-looking fold generation.</param>
     /// <returns>An ordered list of folds, with fold 0 being the earliest.</returns>
-    internal static IReadOnlyList<Fold> Generate(RollingOptions options)
+    internal static IReadOnlyList<Fold> Generate(ForwardLookingOptions options)
     {
         options.Validate();
 

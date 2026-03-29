@@ -89,7 +89,7 @@ public class ConsistencyTests
     [Test]
     public void Compute_mirrors_CryptoBot_algorithm()
     {
-        // Reference test using the CryptoBot AnchoredWalkForwardValidator.ComputeAggregateMetrics
+        // Reference test using the CryptoBot BackwardLookingWalkForwardValidator.ComputeAggregateMetrics
         // algorithm adapted from decimal to double
         double[] returns = [0.10, -0.05, 0.15, 0.03, -0.08, 0.07, -0.02, 0.12];
 

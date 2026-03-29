@@ -5,14 +5,14 @@ using WalkForward.Internal;
 namespace WalkForward.Tests.Unit.FoldGeneration;
 
 [TestFixture]
-public class RollingFoldTests
+public class ForwardLookingFoldTests
 {
     private static readonly TimeSpan FifteenMinutes = TimeSpan.FromMinutes(15);
 
     [Test]
     public void Generate_10000Points_30DayTrain_7DayTest_ProducesFoldsWalkingForwards()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -20,7 +20,7 @@ public class RollingFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         folds.Should().HaveCountGreaterThan(0);
     }
@@ -28,7 +28,7 @@ public class RollingFoldTests
     [Test]
     public void Generate_Fold0TrainStartsAtZero()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -36,7 +36,7 @@ public class RollingFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         folds[0].TrainStart.Should().Be(0);
         folds[0].TrainEnd.Should().Be(2880);
@@ -47,7 +47,7 @@ public class RollingFoldTests
     [Test]
     public void Generate_TrainingWindowSizeIsFixedAcrossAllFolds()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -55,7 +55,7 @@ public class RollingFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
         var expectedTrainLength = 2880;
 
         foreach (var fold in folds)
@@ -69,7 +69,7 @@ public class RollingFoldTests
     [Test]
     public void Generate_FoldBoundariesAreNonOverlapping()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -77,7 +77,7 @@ public class RollingFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         for (var i = 0; i < folds.Count; i++)
         {
@@ -91,7 +91,7 @@ public class RollingFoldTests
     [Test]
     public void Generate_LastFoldTestEndDoesNotExceedTotalDataPoints()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -99,7 +99,7 @@ public class RollingFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         foreach (var fold in folds)
         {

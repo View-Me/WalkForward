@@ -5,14 +5,14 @@ using WalkForward.Internal;
 namespace WalkForward.Tests.Unit.FoldGeneration;
 
 [TestFixture]
-public class AnchoredFoldTests
+public class BackwardLookingFoldTests
 {
     private static readonly TimeSpan FifteenMinutes = TimeSpan.FromMinutes(15);
 
     [Test]
     public void Generate_10000Points_90DayTrain_7DayTest_ProducesFoldsWalkingBackwards()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -20,7 +20,7 @@ public class AnchoredFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         // Auto: (10000 - 8640 - 0) / 672 = 2.02 -> floor = 2
         folds.Should().HaveCount(2);
@@ -29,7 +29,7 @@ public class AnchoredFoldTests
     [Test]
     public void Generate_Fold0HasTestWindowEndingAtDataEnd()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -37,7 +37,7 @@ public class AnchoredFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         folds[0].TestEnd.Should().Be(10000);
         folds[0].TestStart.Should().Be(10000 - 672);
@@ -46,7 +46,7 @@ public class AnchoredFoldTests
     [Test]
     public void Generate_EachFoldTrainingWindowStartsEarlier()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -54,7 +54,7 @@ public class AnchoredFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         folds[0].TrainStart.Should().Be(688);
         folds[0].TrainEnd.Should().Be(9328);
@@ -65,7 +65,7 @@ public class AnchoredFoldTests
     [Test]
     public void Generate_FoldBoundariesAreNonOverlapping()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -73,7 +73,7 @@ public class AnchoredFoldTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         for (var i = 0; i < folds.Count; i++)
         {
@@ -97,7 +97,7 @@ public class AnchoredFoldTests
     [Test]
     public void Generate_WithWarmup500_SkipsFoldsBeforeWarmup()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -106,7 +106,7 @@ public class AnchoredFoldTests
             WarmupPoints = 500,
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         folds.Should().HaveCount(1);
         folds[0].TrainStart.Should().BeGreaterThanOrEqualTo(500);
@@ -115,7 +115,7 @@ public class AnchoredFoldTests
     [Test]
     public void Generate_RequestedMoreFoldsThanPossible_ReturnsFewerFolds()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -124,7 +124,7 @@ public class AnchoredFoldTests
             MaxFolds = 10,
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         folds.Should().HaveCount(2);
     }

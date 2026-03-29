@@ -10,9 +10,9 @@ public class EmbargoTests
     private static readonly TimeSpan FifteenMinutes = TimeSpan.FromMinutes(15);
 
     [Test]
-    public void Anchored_With4hEmbargo_Creates16IndexGap()
+    public void BackwardLooking_With4hEmbargo_Creates16IndexGap()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -21,7 +21,7 @@ public class EmbargoTests
             Embargo = TimeSpan.FromHours(4),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         foreach (var fold in folds)
         {
@@ -32,9 +32,9 @@ public class EmbargoTests
     }
 
     [Test]
-    public void Rolling_With4hEmbargo_Creates16IndexGap()
+    public void ForwardLooking_With4hEmbargo_Creates16IndexGap()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -43,7 +43,7 @@ public class EmbargoTests
             Embargo = TimeSpan.FromHours(4),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         foreach (var fold in folds)
         {
@@ -56,7 +56,7 @@ public class EmbargoTests
     [Test]
     public void NonExactEmbargo_RoundsUpTo16Indices()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -65,7 +65,7 @@ public class EmbargoTests
             Embargo = TimeSpan.FromMinutes(230),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         foreach (var fold in folds)
         {
@@ -77,7 +77,7 @@ public class EmbargoTests
     [Test]
     public void ZeroEmbargo_TestStartsImmediatelyAfterTrainEnds()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -85,7 +85,7 @@ public class EmbargoTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         foreach (var fold in folds)
         {

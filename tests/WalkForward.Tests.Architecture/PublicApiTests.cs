@@ -14,13 +14,13 @@ public class PublicApiTests
     {
         var expected = new HashSet<string>(StringComparer.Ordinal)
         {
-            "WalkForwardBuilder",
-            "AnchoredBuilder",
-            "RollingBuilder",
-            "AnchoredOptions",
-            "RollingOptions",
+            "FoldBuilder",
+            "BackwardLookingBuilder",
+            "ForwardLookingBuilder",
+            "BackwardLookingOptions",
+            "ForwardLookingOptions",
             "Fold",
-            "WalkForwardMode",
+            "FoldMode",
             "Consistency",
             "ConsistencyMetrics",
             "ClassifierConsistencyMetrics",
@@ -40,8 +40,8 @@ public class PublicApiTests
     {
         var internalTypeNames = new[]
         {
-            "AnchoredFoldGenerator",
-            "RollingFoldGenerator",
+            "BackwardLookingFoldGenerator",
+            "ForwardLookingFoldGenerator",
             "Validation",
         };
 

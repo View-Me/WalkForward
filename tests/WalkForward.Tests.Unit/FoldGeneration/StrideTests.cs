@@ -10,9 +10,9 @@ public class StrideTests
     private static readonly TimeSpan FifteenMinutes = TimeSpan.FromMinutes(15);
 
     [Test]
-    public void Rolling_DefaultStride_EqualsTestWindowSize()
+    public void ForwardLooking_DefaultStride_EqualsTestWindowSize()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -20,7 +20,7 @@ public class StrideTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         if (folds.Count >= 2)
         {
@@ -30,9 +30,9 @@ public class StrideTests
     }
 
     [Test]
-    public void Rolling_CustomStride3Days_ConsecutiveFoldsAre288Apart()
+    public void ForwardLooking_CustomStride3Days_ConsecutiveFoldsAre288Apart()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -41,7 +41,7 @@ public class StrideTests
             Stride = TimeSpan.FromDays(3),
         };
 
-        var folds = RollingFoldGenerator.Generate(options);
+        var folds = ForwardLookingFoldGenerator.Generate(options);
 
         folds.Should().HaveCountGreaterThanOrEqualTo(2);
 
@@ -55,9 +55,9 @@ public class StrideTests
     }
 
     [Test]
-    public void Anchored_DoesNotUseStride_FoldsStepByTestWindowSize()
+    public void BackwardLooking_DoesNotUseStride_FoldsStepByTestWindowSize()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -65,12 +65,12 @@ public class StrideTests
             TestWindow = TimeSpan.FromDays(7),
         };
 
-        var folds = AnchoredFoldGenerator.Generate(options);
+        var folds = BackwardLookingFoldGenerator.Generate(options);
 
         if (folds.Count >= 2)
         {
             var step = folds[0].TestEnd - folds[1].TestEnd;
-            step.Should().Be(672, "anchored mode steps by test window size");
+            step.Should().Be(672, "backward-looking mode steps by test window size");
         }
     }
 }

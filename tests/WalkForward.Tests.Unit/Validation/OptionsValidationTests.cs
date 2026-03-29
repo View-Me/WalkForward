@@ -12,9 +12,9 @@ public class OptionsValidationTests
     private static readonly TimeSpan SevenDays = TimeSpan.FromDays(7);
 
     [Test]
-    public void AnchoredOptions_WithValidParameters_CreatesWithoutThrowing()
+    public void BackwardLookingOptions_WithValidParameters_CreatesWithoutThrowing()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -28,9 +28,9 @@ public class OptionsValidationTests
     }
 
     [Test]
-    public void AnchoredOptions_WithZeroTotalDataPoints_ThrowsArgumentOutOfRangeException()
+    public void BackwardLookingOptions_WithZeroTotalDataPoints_ThrowsArgumentOutOfRangeException()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 0,
             DataFrequency = FifteenMinutes,
@@ -41,13 +41,13 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(AnchoredOptions.TotalDataPoints));
+            .WithParameterName(nameof(BackwardLookingOptions.TotalDataPoints));
     }
 
     [Test]
-    public void AnchoredOptions_WithNegativeTotalDataPoints_ThrowsArgumentOutOfRangeException()
+    public void BackwardLookingOptions_WithNegativeTotalDataPoints_ThrowsArgumentOutOfRangeException()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = -1,
             DataFrequency = FifteenMinutes,
@@ -58,13 +58,13 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(AnchoredOptions.TotalDataPoints));
+            .WithParameterName(nameof(BackwardLookingOptions.TotalDataPoints));
     }
 
     [Test]
-    public void AnchoredOptions_WithZeroTrainingWindow_ThrowsArgumentOutOfRangeException()
+    public void BackwardLookingOptions_WithZeroTrainingWindow_ThrowsArgumentOutOfRangeException()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -75,13 +75,13 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(AnchoredOptions.TrainingWindow));
+            .WithParameterName(nameof(BackwardLookingOptions.TrainingWindow));
     }
 
     [Test]
-    public void AnchoredOptions_WithZeroTestWindow_ThrowsArgumentOutOfRangeException()
+    public void BackwardLookingOptions_WithZeroTestWindow_ThrowsArgumentOutOfRangeException()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -92,13 +92,13 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(AnchoredOptions.TestWindow));
+            .WithParameterName(nameof(BackwardLookingOptions.TestWindow));
     }
 
     [Test]
-    public void AnchoredOptions_WithZeroDataFrequency_ThrowsArgumentOutOfRangeException()
+    public void BackwardLookingOptions_WithZeroDataFrequency_ThrowsArgumentOutOfRangeException()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = TimeSpan.Zero,
@@ -109,13 +109,13 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(AnchoredOptions.DataFrequency));
+            .WithParameterName(nameof(BackwardLookingOptions.DataFrequency));
     }
 
     [Test]
-    public void AnchoredOptions_WithNegativeEmbargo_ThrowsArgumentOutOfRangeException()
+    public void BackwardLookingOptions_WithNegativeEmbargo_ThrowsArgumentOutOfRangeException()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -127,13 +127,13 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(AnchoredOptions.Embargo));
+            .WithParameterName(nameof(BackwardLookingOptions.Embargo));
     }
 
     [Test]
-    public void AnchoredOptions_WithNegativeWarmupPoints_ThrowsArgumentOutOfRangeException()
+    public void BackwardLookingOptions_WithNegativeWarmupPoints_ThrowsArgumentOutOfRangeException()
     {
-        var options = new AnchoredOptions
+        var options = new BackwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -145,13 +145,13 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(AnchoredOptions.WarmupPoints));
+            .WithParameterName(nameof(BackwardLookingOptions.WarmupPoints));
     }
 
     [Test]
-    public void RollingOptions_WithValidParameters_CreatesWithoutThrowing()
+    public void ForwardLookingOptions_WithValidParameters_CreatesWithoutThrowing()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -165,9 +165,9 @@ public class OptionsValidationTests
     }
 
     [Test]
-    public void RollingOptions_WithZeroStride_ThrowsArgumentOutOfRangeException()
+    public void ForwardLookingOptions_WithZeroStride_ThrowsArgumentOutOfRangeException()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -179,13 +179,13 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(RollingOptions.Stride));
+            .WithParameterName(nameof(ForwardLookingOptions.Stride));
     }
 
     [Test]
-    public void RollingOptions_WithNegativeEmbargo_ThrowsArgumentOutOfRangeException()
+    public void ForwardLookingOptions_WithNegativeEmbargo_ThrowsArgumentOutOfRangeException()
     {
-        var options = new RollingOptions
+        var options = new ForwardLookingOptions
         {
             TotalDataPoints = 10000,
             DataFrequency = FifteenMinutes,
@@ -197,7 +197,7 @@ public class OptionsValidationTests
         var act = () => options.Validate();
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithParameterName(nameof(RollingOptions.Embargo));
+            .WithParameterName(nameof(ForwardLookingOptions.Embargo));
     }
 
     [Test]
