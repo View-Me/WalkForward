@@ -107,7 +107,8 @@ public class GridSearchBuilderTests
     {
         // 3 train windows x 2 test windows = 6 cells
         // 10000 points at 15-min frequency, backward-looking
-        // All combos should generate >= 2 folds (the default minimum)
+        // Set minimum folds to 1 so all cells with >= 1 fold are included.
+        // 90d/14d: floor((10000-8640)/1344)=1 fold, so all 6 cells pass min=1.
         var result = new FoldBuilder()
             .WithDataPoints(DataPoints)
             .WithDataFrequency(Frequency)
@@ -115,6 +116,7 @@ public class GridSearchBuilderTests
             .WithTrainWindows(TimeSpan.FromDays(30), TimeSpan.FromDays(60), TimeSpan.FromDays(90))
             .WithTestWindows(TimeSpan.FromDays(7), TimeSpan.FromDays(14))
             .BackwardLooking()
+            .WithMinimumFolds(1)
             .Evaluate(_ => 1.0)
             .Build();
 

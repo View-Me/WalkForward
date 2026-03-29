@@ -1,3 +1,5 @@
+using WalkForward.Internal;
+
 namespace WalkForward.GridSearch;
 
 /// <summary>
@@ -216,13 +218,37 @@ public sealed class GridSearchBuilder
     /// </exception>
     public GridSearchResult Build(CancellationToken cancellationToken)
     {
-        // Reference all fields to prevent S4487 (unread field) during stub phase.
-        // These will be used by the real implementation in the GREEN phase.
-        _ = _totalDataPoints + _warmupPoints + _minimumFolds;
-        _ = _dataFrequency + _embargo;
-        _ = _trainWindows ?? _testWindows;
-        _ = _mode ?? _fitnessCallback ?? (object?)_maxFoldsPerCell;
-        cancellationToken.ThrowIfCancellationRequested();
-        throw new NotSupportedException("Grid search engine not yet implemented.");
+        if (_trainWindows is null || _trainWindows.Length == 0)
+        {
+            throw new InvalidOperationException("WithTrainWindows must be called before Build.");
+        }
+
+        if (_testWindows is null || _testWindows.Length == 0)
+        {
+            throw new InvalidOperationException("WithTestWindows must be called before Build.");
+        }
+
+        if (_fitnessCallback is null)
+        {
+            throw new InvalidOperationException("Evaluate must be called before Build.");
+        }
+
+        if (_mode is null)
+        {
+            throw new InvalidOperationException("BackwardLooking or ForwardLooking must be called before Build.");
+        }
+
+        return GridSearchEngine.Execute(
+            _totalDataPoints,
+            _dataFrequency,
+            _trainWindows,
+            _testWindows,
+            _mode.Value,
+            _fitnessCallback,
+            _warmupPoints,
+            _embargo,
+            _minimumFolds,
+            _maxFoldsPerCell,
+            cancellationToken);
     }
 }
