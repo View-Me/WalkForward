@@ -37,7 +37,6 @@ internal static class DegradationEngine
         Func<Fold, IEnumerable<string>>? labeler,
         CancellationToken cancellationToken)
     {
-        _ = labeler; // Used in GREEN phase -- stub suppresses IDE0060
         var folds = GenerateFolds(
             totalDataPoints,
             dataFrequency,
@@ -57,8 +56,13 @@ internal static class DegradationEngine
                 DegradationPercent = 0.0,
                 WalkForwardEfficiency = 0.0,
                 FoldResults = [],
+                SegmentResults = new Dictionary<string, Degradation.DegradationResult>(StringComparer.Ordinal),
             };
         }
+
+        // Per-segment IS/OOS accumulator: segment -> List<(IS, OOS)>
+        Dictionary<string, List<(double IS, double OOS)>>? segmentAccumulator =
+            labeler is not null ? new(StringComparer.Ordinal) : null;
 
         var foldResults = new Degradation.DegradationFoldResult[folds.Count];
         for (var i = 0; i < folds.Count; i++)
@@ -68,6 +72,20 @@ internal static class DegradationEngine
             var isFitness = inSampleCallback(fold);
             var oosFitness = outOfSampleCallback(fold);
             foldResults[i] = new Degradation.DegradationFoldResult(i, isFitness, oosFitness);
+
+            if (segmentAccumulator is not null)
+            {
+                foreach (var label in labeler!(fold))
+                {
+                    if (!segmentAccumulator.TryGetValue(label, out var pairs))
+                    {
+                        pairs = [];
+                        segmentAccumulator[label] = pairs;
+                    }
+
+                    pairs.Add((isFitness, oosFitness));
+                }
+            }
         }
 
         var isMean = foldResults.Average(f => f.InSampleFitness);
@@ -84,6 +102,44 @@ internal static class DegradationEngine
             : 0.0;
 #pragma warning restore S1244
 
+        // Build per-segment degradation results
+        var segmentResults = new Dictionary<string, Degradation.DegradationResult>(StringComparer.Ordinal);
+        if (segmentAccumulator is not null)
+        {
+            foreach (var (segment, pairs) in segmentAccumulator)
+            {
+                if (pairs.Count == 0)
+                {
+                    continue;
+                }
+
+                var segIsMean = pairs.Average(p => p.IS);
+                var segOosMean = pairs.Average(p => p.OOS);
+
+                // Same zero-division guard as overall computation
+#pragma warning disable S1244
+                var segDegradation = segIsMean != 0.0
+                    ? (1.0 - (segOosMean / segIsMean)) * 100.0
+                    : 0.0;
+                var segWfe = segIsMean != 0.0
+                    ? segOosMean / segIsMean
+                    : 0.0;
+#pragma warning restore S1244
+
+                var segFoldResults = pairs.Select((p, idx) =>
+                    new Degradation.DegradationFoldResult(idx, p.IS, p.OOS)).ToArray();
+
+                segmentResults[segment] = new Degradation.DegradationResult
+                {
+                    InSampleMeanFitness = segIsMean,
+                    OutOfSampleMeanFitness = segOosMean,
+                    DegradationPercent = segDegradation,
+                    WalkForwardEfficiency = segWfe,
+                    FoldResults = segFoldResults,
+                };
+            }
+        }
+
         return new Degradation.DegradationResult
         {
             InSampleMeanFitness = isMean,
@@ -91,6 +147,7 @@ internal static class DegradationEngine
             DegradationPercent = degradationPercent,
             WalkForwardEfficiency = wfe,
             FoldResults = foldResults,
+            SegmentResults = segmentResults,
         };
     }
 
