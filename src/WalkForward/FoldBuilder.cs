@@ -1,3 +1,5 @@
+using WalkForward.GridSearch;
+
 namespace WalkForward;
 
 /// <summary>
@@ -56,4 +58,11 @@ public sealed class FoldBuilder
     /// </summary>
     /// <returns>A <see cref="ForwardLookingBuilder"/> for configuring forward-looking parameters.</returns>
     public ForwardLookingBuilder ForwardLooking() => new(_totalDataPoints, _dataFrequency);
+
+    /// <summary>
+    /// Creates a grid search builder for evaluating multiple (train, test) window combinations.
+    /// The grid search iterates over all specified window pairs and ranks them by fitness.
+    /// </summary>
+    /// <returns>A <see cref="GridSearchBuilder"/> for configuring the grid search.</returns>
+    public GridSearchBuilder GridSearch() => new(_totalDataPoints, _dataFrequency);
 }
