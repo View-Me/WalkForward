@@ -27,6 +27,7 @@ public class PublicApiTests
             "GridCellResult",
             "GridSearchBuilder",
             "GridSearchResult",
+            "DegradationBuilder",
             "DegradationResult",
             "DegradationFoldResult",
             "LabeledFold",
@@ -52,6 +53,7 @@ public class PublicApiTests
             "BackwardLookingFoldGenerator",
             "ForwardLookingFoldGenerator",
             "GridSearchEngine",
+            "DegradationEngine",
             "Validation",
         };
 

@@ -1,3 +1,4 @@
+using WalkForward.Degradation;
 using WalkForward.GridSearch;
 
 namespace WalkForward;
@@ -65,4 +66,11 @@ public sealed class FoldBuilder
     /// </summary>
     /// <returns>A <see cref="GridSearchBuilder"/> for configuring the grid search.</returns>
     public GridSearchBuilder GridSearch() => new(_totalDataPoints, _dataFrequency);
+
+    /// <summary>
+    /// Creates a degradation analysis builder for measuring overfitting by comparing
+    /// in-sample and out-of-sample fitness across walk-forward folds.
+    /// </summary>
+    /// <returns>A <see cref="DegradationBuilder"/> for configuring the degradation analysis.</returns>
+    public DegradationBuilder Degrade() => new(_totalDataPoints, _dataFrequency);
 }
