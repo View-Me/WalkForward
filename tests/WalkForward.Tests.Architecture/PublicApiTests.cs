@@ -25,6 +25,8 @@ public class PublicApiTests
             "ConsistencyMetrics",
             "ClassifierConsistencyMetrics",
             "GridCellResult",
+            "GridSearchBuilder",
+            "GridSearchResult",
             "DegradationResult",
             "DegradationFoldResult",
             "LabeledFold",
@@ -49,6 +51,7 @@ public class PublicApiTests
         {
             "BackwardLookingFoldGenerator",
             "ForwardLookingFoldGenerator",
+            "GridSearchEngine",
             "Validation",
         };
 
