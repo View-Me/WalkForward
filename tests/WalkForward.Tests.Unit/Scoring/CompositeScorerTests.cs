@@ -8,6 +8,8 @@ namespace WalkForward.Tests.Unit.Scoring;
 [TestFixture]
 public class CompositeScorerTests
 {
+    private static readonly double[] ExpectedFoldFitnesses = [2.0, 2.5, 3.0, 2.5, 2.0, 2.5, 3.0, 2.5];
+
     [Test]
     public void Score_withoutCallingWithWeights_throwsInvalidOperationException()
     {
@@ -57,17 +59,17 @@ public class CompositeScorerTests
         // 3x3 grid: train windows 30d, 60d, 90d; test windows 7d, 14d, 21d
         var trainDays = new[] { 30, 60, 90 };
         var testDays = new[] { 7, 14, 21 };
-        var fitnesses = new[,]
+        var fitnesses = new[]
         {
-            { 1.0, 1.2, 1.5 },
-            { 1.8, 2.0, 2.2 },
-            { 2.5, 2.8, 3.0 },
+            new[] { 1.0, 1.2, 1.5 },
+            new[] { 1.8, 2.0, 2.2 },
+            new[] { 2.5, 2.8, 3.0 },
         };
-        var consistencies = new[,]
+        var consistencies = new[]
         {
-            { 60.0, 65.0, 70.0 },
-            { 72.0, 75.0, 78.0 },
-            { 80.0, 85.0, 90.0 },
+            new[] { 60.0, 65.0, 70.0 },
+            new[] { 72.0, 75.0, 78.0 },
+            new[] { 80.0, 85.0, 90.0 },
         };
 
         var cells = new List<GridCellResult>();
@@ -76,8 +78,8 @@ public class CompositeScorerTests
             for (var s = 0; s < 3; s++)
             {
                 cells.Add(MakeCell(
-                    fitnesses[t, s],
-                    consistencies[t, s],
+                    fitnesses[t][s],
+                    consistencies[t][s],
                     TimeSpan.FromDays(trainDays[t]),
                     TimeSpan.FromDays(testDays[s])));
             }
@@ -94,19 +96,15 @@ public class CompositeScorerTests
         // smoothness = Smoothness.Compute(trainIdx, testIdx, MeanFitness, gridCells)
         // composite = (normalizedFitness * 0.6) + (consistencyFraction * 0.25) + (smoothness * 0.15)
 
-        // Verify a few key cells
-        var maxFitness = 3.0;
-
         // Cell (0,0) - corner: trainIdx=0, testIdx=0
         var cell00 = result[0];
-        var nf00 = 1.0 / maxFitness;
         cell00.CompositeScore.Should().BeGreaterThan(0.0);
         cell00.SmoothnessBonus.Should().BeGreaterThanOrEqualTo(0.0);
 
         // Cell (2,2) - corner: trainIdx=2, testIdx=2, highest fitness
         var cell22 = result[8];
-        var nf22 = 3.0 / maxFitness; // = 1.0
-        cell22.CompositeScore.Should().BeGreaterThan(cell00.CompositeScore,
+        cell22.CompositeScore.Should().BeGreaterThan(
+            cell00.CompositeScore,
             "highest fitness + consistency cell should score higher");
 
         // Verify all cells have non-zero CompositeScore
@@ -168,7 +166,8 @@ public class CompositeScorerTests
         // Scores come purely from consistency and smoothness
         foreach (var cell in result)
         {
-            cell.CompositeScore.Should().BeGreaterThan(0.0,
+            cell.CompositeScore.Should().BeGreaterThan(
+                0.0,
                 "consistency component should contribute even when fitness is zero");
         }
 
@@ -205,7 +204,7 @@ public class CompositeScorerTests
         scored.Consistency.Should().Be(new ConsistencyMetrics(85, 0.7, -0.01, 2.5));
         scored.FoldCount.Should().Be(8);
         scored.WorstFold.Should().Be(0.5);
-        scored.FoldFitnesses.Should().BeEquivalentTo(new[] { 2.0, 2.5, 3.0, 2.5, 2.0, 2.5, 3.0, 2.5 });
+        scored.FoldFitnesses.Should().BeEquivalentTo(ExpectedFoldFitnesses);
     }
 
     [Test]
