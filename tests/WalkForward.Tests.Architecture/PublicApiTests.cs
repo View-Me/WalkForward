@@ -35,6 +35,9 @@ public class PublicApiTests
             "ScoringWeights",
             "Smoothness",
             "CompositeScorer",
+            "PipelineBuilder",
+            "PipelineResult",
+            "PipelineProgress",
         };
 
         var actual = WalkForwardAssembly.GetExportedTypes()
@@ -55,6 +58,7 @@ public class PublicApiTests
             "ForwardLookingFoldGenerator",
             "GridSearchEngine",
             "DegradationEngine",
+            "PipelineEngine",
             "Validation",
         };
 
