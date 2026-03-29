@@ -1,5 +1,6 @@
 using WalkForward.Degradation;
 using WalkForward.GridSearch;
+using WalkForward.Internal;
 using WalkForward.Scoring;
 
 namespace WalkForward.Pipeline;
@@ -127,8 +128,14 @@ public sealed class PipelineBuilder
             throw new InvalidOperationException("CoarseScan must be configured before Build.");
         }
 
-        // Stub: reference all fields to satisfy analyzers; implementation in Task 2
-        _ = (_totalDataPoints, _dataFrequency, _scorer, _topN, _validateConfig, cancellationToken, progress);
-        throw new NotSupportedException("Pipeline execution not yet implemented.");
+        return PipelineEngine.Execute(
+            _totalDataPoints,
+            _dataFrequency,
+            _coarseScanConfig,
+            _scorer,
+            _topN,
+            _validateConfig,
+            cancellationToken,
+            progress);
     }
 }
