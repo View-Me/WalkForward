@@ -33,6 +33,7 @@ public sealed class DegradationBuilder
     private int _warmupPoints;
     private TimeSpan _embargo;
     private int? _maxFolds;
+    private Func<Fold, IEnumerable<string>>? _labeler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DegradationBuilder"/> class.
@@ -150,6 +151,21 @@ public sealed class DegradationBuilder
     }
 
     /// <summary>
+    /// Sets a labeler callback that assigns arbitrary string labels to each fold.
+    /// When set, the degradation analysis groups results by label and provides per-segment
+    /// degradation metrics via <see cref="DegradationResult.SegmentResults"/>.
+    /// Folds for which the labeler returns an empty enumerable are excluded from all segments
+    /// but still contribute to the overall <see cref="DegradationResult"/>.
+    /// </summary>
+    /// <param name="labeler">A function that receives a fold and returns zero or more labels.</param>
+    /// <returns>This builder for chaining.</returns>
+    public DegradationBuilder WithLabeler(Func<Fold, IEnumerable<string>> labeler)
+    {
+        _labeler = labeler;
+        return this;
+    }
+
+    /// <summary>
     /// Executes the degradation analysis and returns aggregate metrics.
     /// </summary>
     /// <returns>A <see cref="DegradationResult"/> containing IS/OOS fitness comparison metrics.</returns>
@@ -208,6 +224,7 @@ public sealed class DegradationBuilder
             _warmupPoints,
             _embargo,
             _maxFolds,
+            _labeler,
             cancellationToken);
     }
 }

@@ -20,6 +20,7 @@ internal static class DegradationEngine
     /// <param name="warmupPoints">Minimum data points before the first training window.</param>
     /// <param name="embargo">Embargo gap duration between training and test windows.</param>
     /// <param name="maxFolds">Optional cap on fold count.</param>
+    /// <param name="labeler">Optional labeler callback. When provided, fold labels are collected and per-segment results are built.</param>
     /// <param name="cancellationToken">Token checked between fold iterations.</param>
     /// <returns>A <see cref="Degradation.DegradationResult"/> with IS/OOS fitness comparison metrics.</returns>
     internal static Degradation.DegradationResult Execute(
@@ -33,8 +34,10 @@ internal static class DegradationEngine
         int warmupPoints,
         TimeSpan embargo,
         int? maxFolds,
+        Func<Fold, IEnumerable<string>>? labeler,
         CancellationToken cancellationToken)
     {
+        _ = labeler; // Used in GREEN phase -- stub suppresses IDE0060
         var folds = GenerateFolds(
             totalDataPoints,
             dataFrequency,

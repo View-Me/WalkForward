@@ -20,4 +20,12 @@ public sealed record DegradationResult
 
     /// <summary>Gets the per-fold degradation details.</summary>
     public required IReadOnlyList<DegradationFoldResult> FoldResults { get; init; }
+
+    /// <summary>
+    /// Gets per-segment degradation results. Keys are segment labels assigned by the labeler callback.
+    /// Each value is a <see cref="DegradationResult"/> computed from the subset of folds in that segment.
+    /// Empty dictionary when no labeler is configured.
+    /// </summary>
+    public IReadOnlyDictionary<string, DegradationResult> SegmentResults { get; init; } =
+        new Dictionary<string, DegradationResult>(StringComparer.Ordinal);
 }
