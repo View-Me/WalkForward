@@ -53,6 +53,7 @@ public static class DegradationAnalysis
                 warmupPoints,
                 embargo,
                 maxFolds,
+                null,
                 cancellationToken);
 
             results.Add((cell, degradation));
