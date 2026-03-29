@@ -19,5 +19,5 @@ public sealed record GridSearchResult
     /// <param name="count">The number of top cells to return.</param>
     /// <returns>A list containing at most <paramref name="count"/> cells.</returns>
     public IReadOnlyList<GridCellResult> Top(int count) =>
-        count >= 0 ? [] : Cells;
+        Cells.Take(count).ToList();
 }

@@ -40,22 +40,25 @@ public class GridSearchResultTests
     [Test]
     public void Cells_OrderedByMeanFitness_WhenUnscored()
     {
-        // Create cells with varying MeanFitness
-        var cells = new List<GridCellResult>
+        // Build a grid search result through the engine, which sorts by MeanFitness descending.
+        // Use different train windows that produce different fitness (larger train -> fewer folds -> different mean).
+        var result = new FoldBuilder()
+            .WithDataPoints(10000)
+            .WithDataFrequency(TimeSpan.FromMinutes(15))
+            .GridSearch()
+            .WithTrainWindows(TimeSpan.FromDays(30), TimeSpan.FromDays(60))
+            .WithTestWindows(TimeSpan.FromDays(7))
+            .BackwardLooking()
+            .Evaluate(fold => fold.FoldIndex + 1.0)
+            .Build();
+
+        // Engine should sort cells by MeanFitness descending
+        for (var i = 0; i < result.Cells.Count - 1; i++)
         {
-            MakeCell(1.0, TimeSpan.FromDays(30)),
-            MakeCell(3.0, TimeSpan.FromDays(60)),
-            MakeCell(2.0, TimeSpan.FromDays(90)),
-        };
-
-        var result = new GridSearchResult { Cells = cells };
-
-        // When cells are ordered by MeanFitness descending (engine does this)
-        // We verify the expectation: first cell has highest mean fitness
-        // Note: This tests the contract -- engine must sort before creating the result
-        result.Cells[0].MeanFitness.Should().BeGreaterThanOrEqualTo(
-            result.Cells[1].MeanFitness,
-            "cells should be ordered by MeanFitness descending when unscored");
+            result.Cells[i].MeanFitness.Should().BeGreaterThanOrEqualTo(
+                result.Cells[i + 1].MeanFitness,
+                "cells should be ordered by MeanFitness descending when unscored");
+        }
     }
 
     private static GridSearchResult MakeResult(int cellCount)
