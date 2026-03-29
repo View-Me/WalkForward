@@ -23,6 +23,7 @@ internal static class GridSearchEngine
     /// <param name="minimumFolds">Minimum fold count for a cell to be included in results.</param>
     /// <param name="maxFoldsPerCell">Optional cap on folds per cell.</param>
     /// <param name="scorer">Optional composite scorer. When provided, cells are scored and sorted by composite score descending.</param>
+    /// <param name="labeler">Optional labeler callback. When provided, fold labels are collected and per-segment results are built.</param>
     /// <param name="cancellationToken">Token checked between cell iterations.</param>
     /// <returns>A <see cref="GridSearchResult"/> with cells sorted by composite score (if scored) or mean fitness (if unscored) descending.</returns>
     internal static GridSearchResult Execute(
@@ -37,9 +38,14 @@ internal static class GridSearchEngine
         int minimumFolds,
         int? maxFoldsPerCell,
         CompositeScorer? scorer,
+        Func<Fold, IEnumerable<string>>? labeler,
         CancellationToken cancellationToken)
     {
         var cells = new List<GridCellResult>();
+
+        // Segment accumulator: segment label -> (train, test) -> list of fold fitnesses
+        // Initialized only when a labeler callback is provided.
+        _ = labeler; // Will be used for segment collection in GREEN phase.
 
         foreach (var trainWindow in trainWindows)
         {
