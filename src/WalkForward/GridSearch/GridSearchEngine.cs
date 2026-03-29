@@ -43,9 +43,9 @@ internal static class GridSearchEngine
     {
         var cells = new List<GridCellResult>();
 
-        // Segment accumulator: segment label -> (train, test) -> list of fold fitnesses
-        // Initialized only when a labeler callback is provided.
-        _ = labeler; // Will be used for segment collection in GREEN phase.
+        // Per-segment, per-cell fitness accumulator: segment -> (trainWindow, testWindow) -> List<double>
+        Dictionary<string, Dictionary<(TimeSpan Train, TimeSpan Test), List<double>>>? segmentAccumulator =
+            labeler is not null ? new(StringComparer.Ordinal) : null;
 
         foreach (var trainWindow in trainWindows)
         {
@@ -72,6 +72,27 @@ internal static class GridSearchEngine
                 for (var i = 0; i < folds.Count; i++)
                 {
                     foldFitnesses[i] = fitnessCallback(folds[i]);
+
+                    if (segmentAccumulator is not null)
+                    {
+                        foreach (var label in labeler!(folds[i]))
+                        {
+                            if (!segmentAccumulator.TryGetValue(label, out var cellMap))
+                            {
+                                cellMap = [];
+                                segmentAccumulator[label] = cellMap;
+                            }
+
+                            var key = (trainWindow, testWindow);
+                            if (!cellMap.TryGetValue(key, out var fitnessList))
+                            {
+                                fitnessList = [];
+                                cellMap[key] = fitnessList;
+                            }
+
+                            fitnessList.Add(foldFitnesses[i]);
+                        }
+                    }
                 }
 
                 var consistency = Consistency.Compute(foldFitnesses);
@@ -110,7 +131,67 @@ internal static class GridSearchEngine
                 .ToList();
         }
 
-        return new GridSearchResult { Cells = filtered };
+        // Build per-segment results
+        var segmentResults = new Dictionary<string, IReadOnlyList<GridCellResult>>(StringComparer.Ordinal);
+        var bestPerSegment = new Dictionary<string, GridCellResult>(StringComparer.Ordinal);
+
+        if (segmentAccumulator is not null)
+        {
+            foreach (var (segment, cellMap) in segmentAccumulator)
+            {
+                var segmentCells = new List<GridCellResult>();
+                foreach (var ((train, test), fitnesses) in cellMap)
+                {
+                    if (fitnesses.Count < minimumFolds)
+                    {
+                        continue;
+                    }
+
+                    var arr = fitnesses.ToArray();
+                    segmentCells.Add(new GridCellResult
+                    {
+                        TrainWindow = train,
+                        TestWindow = test,
+                        TrainDataPoints = Validation.ToIndexCount(train, dataFrequency),
+                        TestDataPoints = Validation.ToIndexCount(test, dataFrequency),
+                        MeanFitness = arr.Average(),
+                        Consistency = Consistency.Compute(arr),
+                        FoldCount = arr.Length,
+                        WorstFold = arr.Min(),
+                        FoldFitnesses = arr,
+                    });
+                }
+
+                if (segmentCells.Count == 0)
+                {
+                    continue;
+                }
+
+                // Per-segment scoring: scorer normalizes within segment independently
+                if (scorer is not null)
+                {
+                    segmentCells = scorer.Score(segmentCells)
+                        .OrderByDescending(c => c.CompositeScore)
+                        .ToList();
+                }
+                else
+                {
+                    segmentCells = segmentCells
+                        .OrderByDescending(c => c.MeanFitness)
+                        .ToList();
+                }
+
+                segmentResults[segment] = segmentCells;
+                bestPerSegment[segment] = segmentCells[0];
+            }
+        }
+
+        return new GridSearchResult
+        {
+            Cells = filtered,
+            SegmentResults = segmentResults,
+            BestPerSegment = bestPerSegment,
+        };
     }
 
     private static IReadOnlyList<Fold> GenerateFolds(
