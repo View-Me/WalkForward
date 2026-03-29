@@ -24,6 +24,13 @@ public class PublicApiTests
             "Consistency",
             "ConsistencyMetrics",
             "ClassifierConsistencyMetrics",
+            "GridCellResult",
+            "DegradationResult",
+            "DegradationFoldResult",
+            "LabeledFold",
+            "ScoringWeights",
+            "Smoothness",
+            "CompositeScorer",
         };
 
         var actual = WalkForwardAssembly.GetExportedTypes()
