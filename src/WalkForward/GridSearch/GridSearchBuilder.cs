@@ -1,4 +1,5 @@
 using WalkForward.Internal;
+using WalkForward.Scoring;
 
 namespace WalkForward.GridSearch;
 
@@ -27,6 +28,7 @@ public sealed class GridSearchBuilder
     private TimeSpan[]? _testWindows;
     private FoldMode? _mode;
     private Func<Fold, double>? _fitnessCallback;
+    private CompositeScorer? _scorer;
     private int _warmupPoints;
     private TimeSpan _embargo;
     private int _minimumFolds = 2;
@@ -148,6 +150,20 @@ public sealed class GridSearchBuilder
     }
 
     /// <summary>
+    /// Sets the composite scorer used to rank cells by a weighted combination of
+    /// fitness, consistency, and smoothness. When set, <see cref="Build()"/> returns
+    /// cells ordered by <see cref="GridCellResult.CompositeScore"/> descending instead
+    /// of <see cref="GridCellResult.MeanFitness"/> descending.
+    /// </summary>
+    /// <param name="scorer">A configured <see cref="CompositeScorer"/> instance.</param>
+    /// <returns>This builder for chaining.</returns>
+    public GridSearchBuilder WithScoring(CompositeScorer scorer)
+    {
+        _scorer = scorer;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the minimum number of data points required before the first training window.
     /// Folds whose training window would start before this threshold are skipped.
     /// </summary>
@@ -249,6 +265,7 @@ public sealed class GridSearchBuilder
             _embargo,
             _minimumFolds,
             _maxFoldsPerCell,
+            _scorer,
             cancellationToken);
     }
 }

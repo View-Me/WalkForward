@@ -1,4 +1,5 @@
 using WalkForward.GridSearch;
+using WalkForward.Scoring;
 
 namespace WalkForward.Internal;
 
@@ -21,8 +22,9 @@ internal static class GridSearchEngine
     /// <param name="embargo">Embargo gap duration between training and test windows.</param>
     /// <param name="minimumFolds">Minimum fold count for a cell to be included in results.</param>
     /// <param name="maxFoldsPerCell">Optional cap on folds per cell.</param>
+    /// <param name="scorer">Optional composite scorer. When provided, cells are scored and sorted by composite score descending.</param>
     /// <param name="cancellationToken">Token checked between cell iterations.</param>
-    /// <returns>A <see cref="GridSearchResult"/> with cells sorted by mean fitness descending.</returns>
+    /// <returns>A <see cref="GridSearchResult"/> with cells sorted by composite score (if scored) or mean fitness (if unscored) descending.</returns>
     internal static GridSearchResult Execute(
         int totalDataPoints,
         TimeSpan dataFrequency,
@@ -34,6 +36,7 @@ internal static class GridSearchEngine
         TimeSpan embargo,
         int minimumFolds,
         int? maxFoldsPerCell,
+        CompositeScorer? scorer,
         CancellationToken cancellationToken)
     {
         var cells = new List<GridCellResult>();
@@ -86,8 +89,20 @@ internal static class GridSearchEngine
 
         var filtered = cells
             .Where(c => c.FoldCount >= minimumFolds)
-            .OrderByDescending(c => c.MeanFitness)
             .ToList();
+
+        if (scorer is not null)
+        {
+            filtered = scorer.Score(filtered)
+                .OrderByDescending(c => c.CompositeScore)
+                .ToList();
+        }
+        else
+        {
+            filtered = filtered
+                .OrderByDescending(c => c.MeanFitness)
+                .ToList();
+        }
 
         return new GridSearchResult { Cells = filtered };
     }
