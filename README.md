@@ -27,8 +27,8 @@ Targets **.NET 8.0** and **.NET 9.0**. Zero runtime dependencies.
 using WalkForward;
 
 // Generate folds from 10,000 data points at 15-minute frequency
-var folds = new WalkForwardBuilder()
-    .WithDataPoints(10_000)
+var folds = new FoldBuilder()
+    .WithDataPoints(10000)
     .WithDataFrequency(TimeSpan.FromMinutes(15))
     .BackwardLooking()
     .WithTrainingWindow(TimeSpan.FromDays(90))
@@ -57,8 +57,8 @@ var metrics = Consistency.Compute(returns);
 ### Forward-Looking Mode
 
 ```csharp
-var folds = new WalkForwardBuilder()
-    .WithDataPoints(50_000)
+var folds = new FoldBuilder()
+    .WithDataPoints(50000)
     .WithDataFrequency(TimeSpan.FromMinutes(15))
     .ForwardLooking()
     .WithTrainingWindow(TimeSpan.FromDays(30))
@@ -72,13 +72,13 @@ var folds = new WalkForwardBuilder()
 
 | Type | Description |
 |------|-------------|
-| `WalkForwardBuilder` | Entry point. Configure data points and frequency, then select a mode. |
+| `FoldBuilder` | Entry point. Configure data points and frequency, then select a mode. |
 | `BackwardLookingBuilder` | Backward-looking mode configuration: training/test windows, embargo, warmup, max folds. |
 | `ForwardLookingBuilder` | Forward-looking mode configuration: adds stride to backward-looking options. |
 | `Fold` | Single fold with int boundaries and `Range` properties for array slicing. |
 | `BackwardLookingOptions` | Backward-looking configuration record (used internally by `BackwardLookingBuilder`). |
 | `ForwardLookingOptions` | Forward-looking configuration record (used internally by `ForwardLookingBuilder`). |
-| `WalkForwardMode` | Enum: `BackwardLooking`, `ForwardLooking`. |
+| `FoldMode` | Enum: `BackwardLooking`, `ForwardLooking`. |
 | `Consistency` | Static methods: `Compute()` for returns, `ForClassifier()` for ML accuracy. |
 | `ConsistencyMetrics` | Returns-based metrics: consistency %, magnitude consistency, worst fold, average return. |
 | `ClassifierConsistencyMetrics` | Classifier metrics: average accuracy, log-loss, consistency above baseline. |
