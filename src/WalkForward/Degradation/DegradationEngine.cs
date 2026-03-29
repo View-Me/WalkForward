@@ -35,19 +35,97 @@ internal static class DegradationEngine
         int? maxFolds,
         CancellationToken cancellationToken)
     {
-        // Reference all parameters to satisfy analyzers
-        _ = totalDataPoints;
-        _ = dataFrequency;
-        _ = trainWindow;
-        _ = testWindow;
-        _ = mode;
-        _ = inSampleCallback;
-        _ = outOfSampleCallback;
-        _ = warmupPoints;
-        _ = embargo;
-        _ = maxFolds;
-        _ = cancellationToken;
+        var folds = GenerateFolds(
+            totalDataPoints,
+            dataFrequency,
+            trainWindow,
+            testWindow,
+            embargo,
+            warmupPoints,
+            maxFolds,
+            mode);
 
-        throw new NotSupportedException("Stub: not yet implemented.");
+        if (folds.Count == 0)
+        {
+            return new Degradation.DegradationResult
+            {
+                InSampleMeanFitness = 0.0,
+                OutOfSampleMeanFitness = 0.0,
+                DegradationPercent = 0.0,
+                WalkForwardEfficiency = 0.0,
+                FoldResults = [],
+            };
+        }
+
+        var foldResults = new Degradation.DegradationFoldResult[folds.Count];
+        for (var i = 0; i < folds.Count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var fold = folds[i];
+            var isFitness = inSampleCallback(fold);
+            var oosFitness = outOfSampleCallback(fold);
+            foldResults[i] = new Degradation.DegradationFoldResult(i, isFitness, oosFitness);
+        }
+
+        var isMean = foldResults.Average(f => f.InSampleFitness);
+        var oosMean = foldResults.Average(f => f.OutOfSampleFitness);
+
+        // Zero-division guard: exact zero check is intentional for arithmetic safety.
+#pragma warning disable S1244 // Floating point equality -- guarding against division by zero
+        var degradationPercent = isMean != 0.0
+            ? (1.0 - (oosMean / isMean)) * 100.0
+            : 0.0;
+
+        var wfe = isMean != 0.0
+            ? oosMean / isMean
+            : 0.0;
+#pragma warning restore S1244
+
+        return new Degradation.DegradationResult
+        {
+            InSampleMeanFitness = isMean,
+            OutOfSampleMeanFitness = oosMean,
+            DegradationPercent = degradationPercent,
+            WalkForwardEfficiency = wfe,
+            FoldResults = foldResults,
+        };
+    }
+
+    private static IReadOnlyList<Fold> GenerateFolds(
+        int totalDataPoints,
+        TimeSpan dataFrequency,
+        TimeSpan trainWindow,
+        TimeSpan testWindow,
+        TimeSpan embargo,
+        int warmupPoints,
+        int? maxFolds,
+        FoldMode mode)
+    {
+        return mode switch
+        {
+            FoldMode.BackwardLooking => BackwardLookingFoldGenerator.Generate(
+                new BackwardLookingOptions
+                {
+                    TotalDataPoints = totalDataPoints,
+                    DataFrequency = dataFrequency,
+                    TrainingWindow = trainWindow,
+                    TestWindow = testWindow,
+                    Embargo = embargo,
+                    WarmupPoints = warmupPoints,
+                    MaxFolds = maxFolds,
+                }),
+            FoldMode.ForwardLooking => ForwardLookingFoldGenerator.Generate(
+                new ForwardLookingOptions
+                {
+                    TotalDataPoints = totalDataPoints,
+                    DataFrequency = dataFrequency,
+                    TrainingWindow = trainWindow,
+                    TestWindow = testWindow,
+                    Embargo = embargo,
+                    WarmupPoints = warmupPoints,
+                    MaxFolds = maxFolds,
+                }),
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported fold mode."),
+        };
     }
 }
