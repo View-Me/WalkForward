@@ -1,6 +1,5 @@
 using FluentAssertions;
 using NUnit.Framework;
-using WalkForward.GridSearch;
 
 namespace WalkForward.Tests.Unit.GridSearch;
 
@@ -9,8 +8,7 @@ public class GridSearchKFoldTests
 {
     private const int DataPoints = 10000;
     private static readonly TimeSpan Frequency = TimeSpan.FromMinutes(15);
-
-    // --- CVLD-01: WithInnerFolds builder method ---
+    private static readonly string[] SingleLabelA = ["A"];
 
     [Test]
     public void WithInnerFolds_ReturnsBuilderForChaining()
@@ -106,14 +104,13 @@ public class GridSearchKFoldTests
             .Evaluate(fold => fold.TestLength)
             .Build();
 
-        // Without K-fold, TestLength is the outer test window (672 points for 7d at 15min)
-        // With K-fold, TestLength is sub-fold hold-out size (~576 for k=5, 2880/5=576)
+        // Without K-fold, TestLength is the outer test window (672 points for 7d at 15min).
+        // With K-fold, TestLength is sub-fold hold-out size (~576 for k=5, 2880/5=576).
         withKFold.Cells[0].MeanFitness.Should().NotBeApproximately(
-            withoutKFold.Cells[0].MeanFitness, 1.0,
+            withoutKFold.Cells[0].MeanFitness,
+            1.0,
             "inner K-fold should change the fitness values compared to no inner folds");
     }
-
-    // --- CVLD-02: Inner K-fold temporal ordering and weighted average ---
 
     [Test]
     public void Build_WithInnerFolds_TemporalOrdering()
@@ -136,7 +133,6 @@ public class GridSearchKFoldTests
             .Build();
 
         // Each outer fold produces 3 inner sub-folds.
-        // Total callbacks = outerFoldCount * 3
         var outerFoldCount = result.Cells[0].FoldCount;
         receivedFolds.Should().HaveCount(outerFoldCount * 3);
 
@@ -145,16 +141,20 @@ public class GridSearchKFoldTests
         {
             var group = receivedFolds.Skip(outer * 3).Take(3).ToList();
 
-            // Sequential: each sub-fold starts at or after the previous one ends
-            group[0].TestStart.Should().BeLessThan(group[1].TestStart,
+            // Sequential: each sub-fold starts after the previous one
+            group[0].TestStart.Should().BeLessThan(
+                group[1].TestStart,
                 "sub-folds should be temporally ordered (ascending TestStart)");
-            group[1].TestStart.Should().BeLessThan(group[2].TestStart,
+            group[1].TestStart.Should().BeLessThan(
+                group[2].TestStart,
                 "sub-folds should be temporally ordered (ascending TestStart)");
 
             // Non-overlapping: each sub-fold's TestEnd <= next sub-fold's TestStart
-            group[0].TestEnd.Should().BeLessThanOrEqualTo(group[1].TestStart,
+            group[0].TestEnd.Should().BeLessThanOrEqualTo(
+                group[1].TestStart,
                 "sub-folds should be non-overlapping");
-            group[1].TestEnd.Should().BeLessThanOrEqualTo(group[2].TestStart,
+            group[1].TestEnd.Should().BeLessThanOrEqualTo(
+                group[2].TestStart,
                 "sub-folds should be non-overlapping");
         }
     }
@@ -162,10 +162,9 @@ public class GridSearchKFoldTests
     [Test]
     public void Build_WithInnerFolds_WeightedAverageByFoldSize()
     {
-        // Use K=7 on 30d train (2880 points): 2880/7 = 411 remainder 3
-        // Sub-fold sizes: 411, 411, 411, 411, 411, 411, 414 (last absorbs remainder)
+        // Use K=7 on 30d train (2880 points): 2880/7 = 411 remainder 3.
+        // Sub-fold sizes: 411, 411, 411, 411, 411, 411, 414 (last absorbs remainder).
         // Callback returns fold.TestLength as fitness.
-        // We capture all (TestLength, fitness) pairs and compute expected weighted average.
         var subFoldLengths = new List<int>();
 
         var result = new FoldBuilder()
@@ -185,19 +184,22 @@ public class GridSearchKFoldTests
 
         var outerFoldCount = result.Cells[0].FoldCount;
 
-        // Verify we can compute the expected weighted average from captured sub-fold lengths
-        // For each outer fold (group of 7 sub-folds), compute weighted average
+        // For each outer fold (group of 7 sub-folds), compute expected weighted average
         var expectedFitnesses = new List<double>();
         for (var outer = 0; outer < outerFoldCount; outer++)
         {
             var group = subFoldLengths.Skip(outer * 7).Take(7).ToList();
-            var weightedSum = group.Sum(len => (double)len * len); // fitness=len, weight=len
+
+            // fitness=len, weight=len, so weighted sum = sum(len*len)
+            var weightedSum = group.Sum(len => (double)len * len);
             var totalWeight = group.Sum();
             expectedFitnesses.Add(weightedSum / totalWeight);
         }
 
         var expectedMean = expectedFitnesses.Average();
-        result.Cells[0].MeanFitness.Should().BeApproximately(expectedMean, 0.001,
+        result.Cells[0].MeanFitness.Should().BeApproximately(
+            expectedMean,
+            0.001,
             "MeanFitness should reflect weighted average by fold size, not simple average");
     }
 
@@ -223,21 +225,22 @@ public class GridSearchKFoldTests
 
         var outerFoldCount = result.Cells[0].FoldCount;
 
-        // For each outer fold group, the last sub-fold's TestEnd should equal
-        // the outer fold's TrainEnd (no data points are dropped)
+        // For each outer fold group, verify sub-fold sizes
         for (var outer = 0; outer < outerFoldCount; outer++)
         {
             var group = receivedFolds.Skip(outer * 7).Take(7).ToList();
             var lastSubFold = group[^1];
 
             // 2880 / 7 = 411 remainder 3 -> last sub-fold has 414 points
-            lastSubFold.TestLength.Should().Be(414,
+            lastSubFold.TestLength.Should().Be(
+                414,
                 "last sub-fold should absorb remainder (2880 mod 7 = 3 extra points)");
 
             // First 6 sub-folds should each have 411 points
             for (var k = 0; k < 6; k++)
             {
-                group[k].TestLength.Should().Be(411,
+                group[k].TestLength.Should().Be(
+                    411,
                     $"sub-fold {k} should have base size of 411");
             }
         }
@@ -246,8 +249,8 @@ public class GridSearchKFoldTests
     [Test]
     public void Build_WithInnerFolds_TrainWindowTooSmall_FallsBackToSingleEvaluation()
     {
-        // Use K=200 on a train window with only 96 points (1 day at 15-min frequency)
-        // 96 / 200 = 0 -> falls back to single evaluation (same as no inner folds)
+        // Use K=200 on a train window with only 96 points (1 day at 15-min frequency).
+        // 96 / 200 = 0 -> falls back to single evaluation (same as no inner folds).
         var withLargeK = new FoldBuilder()
             .WithDataPoints(DataPoints)
             .WithDataFrequency(Frequency)
@@ -270,11 +273,10 @@ public class GridSearchKFoldTests
             .Build();
 
         withLargeK.Cells[0].MeanFitness.Should().BeApproximately(
-            withoutInnerFolds.Cells[0].MeanFitness, 0.0001,
+            withoutInnerFolds.Cells[0].MeanFitness,
+            0.0001,
             "when train window is too small for K sub-folds, should fall back to single evaluation");
     }
-
-    // --- D-03: Labeler runs on outer folds only ---
 
     [Test]
     public void Build_WithInnerFoldsAndLabeler_LabelerRunsOnOuterFoldsOnly()
@@ -290,21 +292,23 @@ public class GridSearchKFoldTests
             .BackwardLooking()
             .WithInnerFolds(5)
             .Evaluate(_ => 1.0)
-            .WithLabeler(fold =>
+            .WithLabeler(_ =>
             {
                 labelerCallCount++;
-                return new[] { "A" };
+                return SingleLabelA;
             })
             .Build();
 
         var totalOuterFolds = result.Cells.Sum(c => c.FoldCount);
 
         // Labeler should be invoked once per outer fold, NOT once per inner sub-fold
-        labelerCallCount.Should().Be(totalOuterFolds,
+        labelerCallCount.Should().Be(
+            totalOuterFolds,
             "labeler should be called once per outer fold, not K times per outer fold");
 
         // If labeler ran on inner sub-folds, count would be totalOuterFolds * 5
-        labelerCallCount.Should().NotBe(totalOuterFolds * 5,
+        labelerCallCount.Should().NotBe(
+            totalOuterFolds * 5,
             "labeler must NOT run on inner sub-folds");
     }
 }

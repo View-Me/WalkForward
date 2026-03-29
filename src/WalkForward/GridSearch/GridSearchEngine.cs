@@ -24,6 +24,7 @@ internal static class GridSearchEngine
     /// <param name="maxFoldsPerCell">Optional cap on folds per cell.</param>
     /// <param name="scorer">Optional composite scorer. When provided, cells are scored and sorted by composite score descending.</param>
     /// <param name="labeler">Optional labeler callback. When provided, fold labels are collected and per-segment results are built.</param>
+    /// <param name="innerFolds">Number of inner K-fold temporal splits within each training window. Values less than 2 disable inner cross-validation.</param>
     /// <param name="cancellationToken">Token checked between cell iterations.</param>
     /// <returns>A <see cref="GridSearchResult"/> with cells sorted by composite score (if scored) or mean fitness (if unscored) descending.</returns>
     internal static GridSearchResult Execute(
@@ -39,6 +40,7 @@ internal static class GridSearchEngine
         int? maxFoldsPerCell,
         CompositeScorer? scorer,
         Func<Fold, IEnumerable<string>>? labeler,
+        int innerFolds,
         CancellationToken cancellationToken)
     {
         var cells = new List<GridCellResult>();
@@ -71,7 +73,7 @@ internal static class GridSearchEngine
                 var foldFitnesses = new double[folds.Count];
                 for (var i = 0; i < folds.Count; i++)
                 {
-                    foldFitnesses[i] = fitnessCallback(folds[i]);
+                    foldFitnesses[i] = EvaluateFold(folds[i], fitnessCallback, innerFolds);
 
                     if (segmentAccumulator is not null)
                     {
@@ -230,5 +232,53 @@ internal static class GridSearchEngine
                 }),
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported fold mode."),
         };
+    }
+
+    private static double EvaluateFold(
+        Fold outerFold,
+        Func<Fold, double> fitnessCallback,
+        int innerFolds)
+    {
+        if (innerFolds < 2)
+        {
+            return fitnessCallback(outerFold);
+        }
+
+        var trainLength = outerFold.TrainEnd - outerFold.TrainStart;
+        var subFoldSize = trainLength / innerFolds;
+
+        if (subFoldSize <= 0)
+        {
+            return fitnessCallback(outerFold);
+        }
+
+        var weightedSum = 0.0;
+        var totalWeight = 0;
+
+        for (var k = 0; k < innerFolds; k++)
+        {
+            var holdOutStart = outerFold.TrainStart + (k * subFoldSize);
+            var holdOutEnd = k == innerFolds - 1
+                ? outerFold.TrainEnd
+                : holdOutStart + subFoldSize;
+
+            var innerFold = new Fold
+            {
+                FoldIndex = k,
+                TrainStart = outerFold.TrainStart,
+                TrainEnd = outerFold.TrainEnd,
+                TestStart = holdOutStart,
+                TestEnd = holdOutEnd,
+                EmbargoStart = holdOutEnd,
+                EmbargoEnd = holdOutEnd,
+            };
+
+            var subFitness = fitnessCallback(innerFold);
+            var weight = holdOutEnd - holdOutStart;
+            weightedSum += subFitness * weight;
+            totalWeight += weight;
+        }
+
+        return weightedSum / totalWeight;
     }
 }

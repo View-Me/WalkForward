@@ -34,6 +34,7 @@ public sealed class GridSearchBuilder
     private TimeSpan _embargo;
     private int _minimumFolds = 2;
     private int? _maxFoldsPerCell;
+    private int _innerFolds;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GridSearchBuilder"/> class.
@@ -229,6 +230,23 @@ public sealed class GridSearchBuilder
     }
 
     /// <summary>
+    /// Enables inner K-fold temporal cross-validation within each training window.
+    /// When <paramref name="k"/> is 2 or greater, each outer fold's training window
+    /// is split into <paramref name="k"/> equal temporal blocks. Each block takes a turn
+    /// as hold-out while the rest serve as training data. The fitness callback is invoked
+    /// per sub-fold and results are aggregated via weighted average by fold size.
+    /// When <paramref name="k"/> is 0 or 1, inner cross-validation is disabled and
+    /// the grid search behaves identically to calling without this method.
+    /// </summary>
+    /// <param name="k">Number of inner folds. Must be 2 or greater to enable. Default is 0 (disabled).</param>
+    /// <returns>This builder for chaining.</returns>
+    public GridSearchBuilder WithInnerFolds(int k)
+    {
+        _innerFolds = k;
+        return this;
+    }
+
+    /// <summary>
     /// Executes the grid search and returns ranked results.
     /// </summary>
     /// <returns>A <see cref="GridSearchResult"/> containing ranked cell results.</returns>
@@ -284,6 +302,7 @@ public sealed class GridSearchBuilder
             _maxFoldsPerCell,
             _scorer,
             _labeler,
+            _innerFolds,
             cancellationToken);
     }
 }
