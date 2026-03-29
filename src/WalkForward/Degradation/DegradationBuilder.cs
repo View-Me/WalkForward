@@ -1,3 +1,5 @@
+using WalkForward.Internal;
+
 namespace WalkForward.Degradation;
 
 /// <summary>
@@ -170,19 +172,42 @@ public sealed class DegradationBuilder
     /// </exception>
     public DegradationResult Build(CancellationToken cancellationToken)
     {
-        // Reference all fields to satisfy analyzers
-        _ = _totalDataPoints;
-        _ = _dataFrequency;
-        _ = _trainingWindow;
-        _ = _testWindow;
-        _ = _mode;
-        _ = _inSampleCallback;
-        _ = _outOfSampleCallback;
-        _ = _warmupPoints;
-        _ = _embargo;
-        _ = _maxFolds;
-        _ = cancellationToken;
+        if (_trainingWindow == TimeSpan.Zero)
+        {
+            throw new InvalidOperationException("WithTrainingWindow must be called before Build.");
+        }
 
-        throw new NotSupportedException("Stub: not yet implemented.");
+        if (_testWindow == TimeSpan.Zero)
+        {
+            throw new InvalidOperationException("WithTestWindow must be called before Build.");
+        }
+
+        if (_inSampleCallback is null)
+        {
+            throw new InvalidOperationException("EvaluateInSample must be called before Build.");
+        }
+
+        if (_outOfSampleCallback is null)
+        {
+            throw new InvalidOperationException("EvaluateOutOfSample must be called before Build.");
+        }
+
+        if (_mode is null)
+        {
+            throw new InvalidOperationException("BackwardLooking or ForwardLooking must be called before Build.");
+        }
+
+        return DegradationEngine.Execute(
+            _totalDataPoints,
+            _dataFrequency,
+            _trainingWindow,
+            _testWindow,
+            _mode.Value,
+            _inSampleCallback,
+            _outOfSampleCallback,
+            _warmupPoints,
+            _embargo,
+            _maxFolds,
+            cancellationToken);
     }
 }
