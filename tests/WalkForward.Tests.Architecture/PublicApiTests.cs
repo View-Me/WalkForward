@@ -30,6 +30,7 @@ public class PublicApiTests
             "DegradationBuilder",
             "DegradationResult",
             "DegradationFoldResult",
+            "DegradationAnalysis",
             "LabeledFold",
             "ScoringWeights",
             "Smoothness",
